@@ -4,13 +4,8 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
 import "./ERC721.sol";
-import "./ERC721Reedemable.sol";
 
-abstract contract ERC721Enumerable is
-    ERC721,
-    IERC721Enumerable,
-    ERC721Reedemable
-{
+abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
     // See {IERC721Enumerable-totalSupply}.
     function totalSupply() public view virtual override returns (uint256) {
         return _owners.length;

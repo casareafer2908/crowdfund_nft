@@ -5,9 +5,10 @@
 pragma solidity ^0.8.7;
 
 import "./ERC721Enumerable.sol";
+import "./ERC721Reedemable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract OneTMShowOff is ERC721Enumerable, Ownable {
+contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     using Strings for uint256;
 
     address public vault; // Contract to recieve ETH raised in sales
@@ -33,9 +34,9 @@ contract OneTMShowOff is ERC721Enumerable, Ownable {
 
     //Sets number of redeems to all minted tokens
     function setAllTokensRedeems(uint256 redeemsLimit) public onlyOwner {
-        tokenList = totalSupply();
+        uint256 supply = totalSupply();
         require(supply > 0, "No tokens minted to set redeem limit");
-        _setAllTokensRedeems(redeemsLimit, tokenList);
+        _setAllTokensRedeems(redeemsLimit, supply);
     }
 
     // Reads available redeems for a token

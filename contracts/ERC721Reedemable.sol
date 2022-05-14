@@ -17,7 +17,7 @@ abstract contract ERC721Reedemable is Context, Ownable {
     }
     Redeem_State public redeem_state;
 
-    constructor() public {
+    constructor() {
         redeem_state = Redeem_State.OFF;
     }
 
@@ -38,6 +38,7 @@ abstract contract ERC721Reedemable is Context, Ownable {
         internal
         onlyOwner
     {
+        uint256 i = 0;
         while (i < tokenList) {
             tokenIdToRemainingRedeems[i] = redeemsLimit;
             i++;
@@ -53,20 +54,18 @@ abstract contract ERC721Reedemable is Context, Ownable {
         return tokenIdToRemainingRedeems[tokenId];
     }
 
-    function readRedeemState() public view returns (bytes32) {
-        return redeem_state;
+    function readRedeemState() public view returns (bool) {
+        bool active = (redeem_state == Redeem_State.ON ? true : false);
+        return active;
     }
 
     //internal since it can only be opened when the goal is met
-    function _setRedeemState(uint256 state) internal onlyOwner {
-        redeem_state = state;
+    function _setRedeemState(bool state) internal onlyOwner {
+        redeem_state = (state == true ? Redeem_State.ON : Redeem_State.OFF);
     }
 
-    function redeem(address tokenId) public {
-        require(
-            _isApprovedOrOwner(msg.sender, tokenId),
-            "ERC721: transfer caller is not owner nor approved"
-        );
+    //TODO save redeem times, update token metadata
+    function redeem(uint256 tokenId) public {
         require(tokenIdToRedeemState[tokenId] == Redeem_State.ON);
     }
 }
