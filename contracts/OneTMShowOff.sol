@@ -20,6 +20,36 @@ contract OneTMShowOff is ERC721Enumerable, Ownable {
         setPrice(_price);
     }
 
+    ///////////UNDER CONSTRUCTION
+
+    //Sets number of redeems limit to a single token
+    function setTokenRedeems(uint256 tokenId, uint256 redeemsLimit)
+        public
+        onlyOwner
+    {
+        require(_exists(tokenId), "ERC721 Token doesn't exist");
+        _setTokenRedeems(tokenId, redeemsLimit);
+    }
+
+    //Sets number of redeems to all minted tokens
+    function setAllTokensRedeems(uint256 redeemsLimit) public onlyOwner {
+        tokenList = totalSupply();
+        require(supply > 0, "No tokens minted to set redeem limit");
+        _setAllTokensRedeems(redeemsLimit, tokenList);
+    }
+
+    // Reads available redeems for a token
+    function readTokenRedeemLimit(uint256 tokenId)
+        public
+        view
+        returns (uint256)
+    {
+        require(_exists(tokenId), "ERC721 Token doesn't exist");
+        _readTokenRedeemLimit(tokenId);
+    }
+
+    //////////////
+
     // Override of `_baseURI()` that returns `gallery`
     function _baseURI() internal view virtual override returns (string memory) {
         return gallery;
