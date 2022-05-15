@@ -4,13 +4,8 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
-import "./ERC721Enumerable.sol";
 
-abstract contract Crowdfunds is Context, Ownable, ERC721Enumerable {
-    // ETH_RAISED,  ==> 1
-    // MINT_NUMBER, ==> 2
-    // DEFAULT      ==> 0
-
+abstract contract Crowdfund is Context, Ownable {
     enum Crowdfund_Method {
         ETH_RAISED,
         MINT_NUMBER,
@@ -27,8 +22,6 @@ abstract contract Crowdfunds is Context, Ownable, ERC721Enumerable {
     }
 
     function _setCrowdfundMethod(uint256 method) internal onlyOwner {
-        require(method <= 2, "Invalid Crowdfund Method");
-        require(method >= 0, "Invalid Crowdfund Method");
         if (method == 0) {
             crowdfund_method = Crowdfund_Method.DEFAULT;
         } else if (method == 1) {
@@ -42,7 +35,7 @@ abstract contract Crowdfunds is Context, Ownable, ERC721Enumerable {
         bytes32 method;
         if (crowdfund_method == Crowdfund_Method.DEFAULT) {
             method = "Default";
-        } else if (crowdfund_method = Crowdfund_Method.ETH_RAISED) {
+        } else if (crowdfund_method == Crowdfund_Method.ETH_RAISED) {
             method = "ETH Raised";
         } else {
             method = "Mints number";
@@ -58,9 +51,9 @@ abstract contract Crowdfunds is Context, Ownable, ERC721Enumerable {
         goal = _goal;
     }
 
-    function _verifyCrowdfundGoal() internal returns (bool) {
+    function _verifyCrowdfundGoal(uint256 supply) internal returns (bool) {
         // ETH Raised goal
-        if (crowdfund_method = Crowdfund_Method.ETH_RAISED) {
+        if (crowdfund_method == Crowdfund_Method.ETH_RAISED) {
             if (address(this).balance >= goal) {
                 return true;
             } else {
@@ -69,7 +62,7 @@ abstract contract Crowdfunds is Context, Ownable, ERC721Enumerable {
         }
         // Number of mints goal
         else {
-            if (totalSupply() >= goal) {
+            if (supply >= goal) {
                 return true;
             } else {
                 return false;

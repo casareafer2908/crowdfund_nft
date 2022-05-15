@@ -6,9 +6,15 @@ pragma solidity ^0.8.7;
 
 import "./ERC721Enumerable.sol";
 import "./ERC721Reedemable.sol";
+import "./Crowdfund.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
+contract OneTMShowOff is
+    ERC721Enumerable,
+    Ownable,
+    ERC721Reedemable,
+    Crowdfund
+{
     using Strings for uint256;
 
     address public vault; // Contract to recieve ETH raised in sales
@@ -18,7 +24,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     uint256 public supplyLimit; // Amount of ETH required per mint
     uint256 public mintablePerWallet;
 
-    // Sets `price` upon deployment
+    // Sets `price`, `nft supply` and `mints per wallet` upon deployment
     constructor(uint256 _price, uint256 _supplyLimit)
         ERC721("OneTMShowOff", "OneTM")
     {
@@ -64,11 +70,26 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
         return _readTokenRedeemLimit(tokenId);
     }
 
-    // Set redeems Available - Unavailable
+    // Redeem control
     function setRedeemState(bool state) internal {
         _setRedeemState(state);
     }
 
+    // Crowdfund Methods:
+    // DEFAULT      ==> 0
+    // ETH_RAISED,  ==> 1
+    // MINT_NUMBER, ==> 2
+    function setCrowdfundMethod(uint256 _method) external onlyOwner {
+        require(_method <= 2, "Invalid Crowdfund Method");
+        require(_method >= 0, "Invalid Crowdfund Method");
+        _setCrowdfundMethod(_method);
+    }
+
+    function setCrowdfundGoal(uint256 _goal) external onlyOwner {
+        _setCrowdfundGoal(_goal);
+    }
+
+    //TODO Only token owner can redeem
     function redeem(uint256 tokenId, uint256 ammount) external {
         _redeem(tokenId, ammount);
     }
@@ -126,7 +147,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
             _safeMint(msg.sender, supply + i);
         }
         //If the goal is met, holders will be able to redeem
-        if (_verifyCrowdfundGoal()) {
+        if (_verifyCrowdfundGoal(supply)) {
             setRedeemState(true);
         }
     }
