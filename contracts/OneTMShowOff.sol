@@ -49,7 +49,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
         return _readTokenRedeemLimit(tokenId);
     }
 
-    //TODO implement fnction
+    //TODO implement function
     function redeem(uint256 tokenId) {
         _redeem(tokenId);
     }
