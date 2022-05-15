@@ -89,8 +89,11 @@ contract OneTMShowOff is
         _setCrowdfundGoal(_goal);
     }
 
-    //TODO Only token owner can redeem
     function redeem(uint256 tokenId, uint256 ammount) external {
+        require(
+            ownerOf(tokenId) == msg.sender,
+            "You are not the owner this token"
+        );
         _redeem(tokenId, ammount);
     }
 

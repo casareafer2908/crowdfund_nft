@@ -54,6 +54,7 @@ abstract contract Crowdfund is Context, Ownable {
     function _verifyCrowdfundGoal(uint256 supply) internal returns (bool) {
         // ETH Raised goal
         if (crowdfund_method == Crowdfund_Method.ETH_RAISED) {
+            //checks if the contract address reached the goal
             if (address(this).balance >= goal) {
                 return true;
             } else {
@@ -70,5 +71,6 @@ abstract contract Crowdfund is Context, Ownable {
         }
     }
 
+    //TODO implement crowdfund sale period
     function _setCrowdfundSalePeriod() internal onlyOwner {}
 }
