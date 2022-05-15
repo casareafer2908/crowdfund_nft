@@ -29,14 +29,14 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
         onlyOwner
     {
         require(_exists(tokenId), "ERC721 Token doesn't exist");
-        _setTokenRedeemss(tokenId, redeemsLimit);
+        _setTokenRedeems(tokenId, redeemsLimit);
     }
 
     //Sets number of redeems to all minted tokens
     function setAllTokensRedeems(uint256 redeemsLimit) public onlyOwner {
         uint256 supply = totalSupply();
         require(supply > 0, "No tokens minted to set redeem limit");
-        _setAllTokensRedeemss(redeemsLimit, supply);
+        _setAllTokensRedeems(redeemsLimit, supply);
     }
 
     // Reads available redeems for a token
@@ -47,6 +47,11 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     {
         require(_exists(tokenId), "ERC721 Token doesn't exist");
         return _readTokenRedeemLimit(tokenId);
+    }
+
+    //TODO implement fnction
+    function redeem(uint256 tokenId) {
+        _redeem(tokenId);
     }
 
     //////////////

@@ -4,8 +4,6 @@ pragma solidity ^0.8.7;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Context.sol";
-import "@openzeppelin/contracts/token/ERC721/extensions/IERC721Enumerable.sol";
-import "./ERC721.sol";
 
 abstract contract ERC721Reedemable is Context, Ownable {
     //states:
@@ -15,50 +13,49 @@ abstract contract ERC721Reedemable is Context, Ownable {
         OFF,
         ON
     }
-    Redeem_State public redeem_state;
+    Redeem_State internal redeem_state;
 
     constructor() {
         redeem_state = Redeem_State.OFF;
     }
 
     //maps
-    //todo do this map internal
-    mapping(uint256 => Redeem_State) public tokenIdToRedeemState;
     mapping(uint256 => uint256) internal tokenIdToRemainingRedeems;
 
     //events
     event SetTokenLimit(uint256 tokenId, uint256 redeemsLimit);
     event SetAllTokensLimit(uint256 redeemsLimit);
+    event redeemGoods(uint256 redeemAmount, uint256 redeemLeft);
 
     //Sets number of redeems limit to a single token
-    function _setTokenRedeemss(uint256 tokenId, uint256 redeemsLimit)
+    function _setTokenRedeems(uint256 _tokenId, uint256 _redeemsLimit)
         internal
         onlyOwner
     {
-        tokenIdToRemainingRedeems[tokenId] = redeemsLimit;
-        emit SetTokenLimit(tokenId, redeemsLimit);
+        tokenIdToRemainingRedeems[_tokenId] = _redeemsLimit;
+        emit SetTokenLimit(_tokenId, _redeemsLimit);
     }
 
     //Sets number of redeems limit to minted tokens
-    function _setAllTokensRedeemss(uint256 redeemsLimit, uint256 tokenList)
+    function _setAllTokensRedeems(uint256 _redeemsLimit, uint256 _tokenList)
         internal
         onlyOwner
     {
         uint256 i = 0;
-        while (i < tokenList) {
-            tokenIdToRemainingRedeems[i] = redeemsLimit;
+        while (i < _tokenList) {
+            tokenIdToRemainingRedeems[i] = _redeemsLimit;
             i++;
         }
-        emit SetAllTokensLimit(redeemsLimit);
+        emit SetAllTokensLimit(_redeemsLimit);
     }
 
     //Returns available redeems
-    function _readTokenRedeemLimit(uint256 tokenId)
+    function _readTokenRedeemLimit(uint256 _tokenId)
         internal
         view
         returns (uint256)
     {
-        return tokenIdToRemainingRedeems[tokenId];
+        return tokenIdToRemainingRedeems[_tokenId];
     }
 
     function readRedeemState() public view returns (bool) {
@@ -67,12 +64,27 @@ abstract contract ERC721Reedemable is Context, Ownable {
     }
 
     //internal since it can only be opened when the goal is met
-    function _setRedeemState(bool state) internal onlyOwner {
-        redeem_state = (state == true ? Redeem_State.ON : Redeem_State.OFF);
+    function _setRedeemState(bool _state) internal onlyOwner {
+        redeem_state = (_state == true ? Redeem_State.ON : Redeem_State.OFF);
     }
 
     //TODO save redeem times, update token metadata
-    function redeem(uint256 tokenId) public {
-        require(tokenIdToRedeemState[tokenId] == Redeem_State.ON);
+    function _redeem(uint256 _tokenId, uint256 _ammount) internal {
+        require(
+            redeem_state == Redeem_State.ON,
+            "Redeems are not available right now"
+        );
+        require(
+            tokenIdToRemainingRedeems[_tokenId] > 0,
+            "You've not redeems left"
+        );
+        require(
+            tokenIdToRemainingRedeems[_tokenId] > _ammount,
+            "You've not enough redeems"
+        );
+        tokenIdToRemainingRedeems[_tokenId] =
+            tokenIdToRemainingRedeems[_tokenId] -
+            1;
+        emit redeemGoods(_ammount, tokenIdToRemainingRedeems[_tokenId]);
     }
 }
