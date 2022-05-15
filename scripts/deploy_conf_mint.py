@@ -11,6 +11,7 @@ collectionVault = config["networks"][network.show_active()]["collection_vault"]
 
 isActive = True
 redeemsLimit = 1
+setSupply = 555
 
 
 def deploy10():
@@ -25,8 +26,10 @@ def main():
     print(network.show_active())
     # human readable plz
     print(f"Set token price ==> {Web3.fromWei(setPrice, 'ether')} ETH")
+    print(f"Set Supply Limit ==> {setSupply}")
     one_tm_show_off = OneTMShowOff.deploy(
         setPrice,
+        setSupply,
         {"from": dev},
         publish_source=get_publish_source(),
     )
@@ -38,6 +41,7 @@ def main():
     one_tm_show_off.setMintActive(isActive, {"from": dev})
     deploy10()
     one_tm_show_off.setRedeemState(isActive, {"from": dev})
+    print(f"redeemsLimmit=> {redeemsLimit}")
     one_tm_show_off.setAllTokensRedeems(redeemsLimit, {"from": dev})
 
     return one_tm_show_off

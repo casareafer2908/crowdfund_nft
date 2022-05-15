@@ -14,11 +14,15 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     address public vault; // Contract to recieve ETH raised in sales
     bool public isActive; // Control for public sale
     string public gallery; // Reference to image and metadata storage
-    uint256 public price; // Amount of ETH required per mint
+    uint256 public price;
+    uint256 public supplyLimit; // Amount of ETH required per mint
 
     // Sets `price` upon deployment
-    constructor(uint256 _price) ERC721("OneTMShowOff", "OneTM") {
-        setPrice(_price);
+    constructor(uint256 price, uint256 _supplyLimit)
+        ERC721("OneTMShowOff", "OneTM")
+    {
+        setPrice(price);
+        setSupply(_supplyLimit);
     }
 
     ////////////////////////////////
@@ -27,7 +31,12 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     ///////////////////////////////////////////
     ////////////////////////////////
 
-    //Sets number of redeems limit to a single token
+    //sets the collection supply limit
+    function setSupply(uint256 _supplyLimit) external onlyOwner {
+        supplyLimit = _supplyLimit;
+    }
+
+    // Sets number of redeems limit to a single token
     function setTokenRedeems(uint256 tokenId, uint256 redeemsLimit)
         external
         onlyOwner
@@ -103,7 +112,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
 
         require(isActive, "Not Active");
         require(_amount < 3, "Amount Denied");
-        require(supply + _amount < 556, "Supply Denied");
+        require(supply + _amount <= supplyLimit, "Supply Denied");
         require(tx.origin == msg.sender, "Contract Denied");
         require(msg.value >= price * _amount, "Ether Amount Denied");
 
