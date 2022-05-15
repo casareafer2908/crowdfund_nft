@@ -52,6 +52,9 @@ abstract contract Crowdfund is Context, Ownable {
     }
 
     function _verifyCrowdfundGoal(uint256 supply) internal returns (bool) {
+        //TODO: Add Safe Withdraw Logic. If the owner withdraws funds from the contract,
+        //the goal trigger will not be met, therefore redeems will be closed on the next mint
+
         // ETH Raised goal
         if (crowdfund_method == Crowdfund_Method.ETH_RAISED) {
             //checks if the contract address reached the goal
