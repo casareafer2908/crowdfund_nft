@@ -20,8 +20,8 @@ contract OneTMShowOff is
     address public vault; // Contract to recieve ETH raised in sales
     bool public isActive; // Control for public sale
     string public gallery; // Reference to image and metadata storage
-    uint256 public price;
-    uint256 public supplyLimit; // Amount of ETH required per mint
+    uint256 public price; // Amount of ETH required per mint
+    uint256 public supplyLimit;
     uint256 public mintablePerWallet;
     uint256 internal redeemsLimit;
 
@@ -35,19 +35,43 @@ contract OneTMShowOff is
         redeemsLimit = 0;
     }
 
+    //events
+    event VaultSet(bool vaultSet);
+    event GallerySet(bool gallerySet);
+    event TokenRedeemsLimitSet(bool tokenRedeemsLimitSet, uint256 limitEvent);
+    event CrowdfundMethodSet(
+        bool crowdfundMethodSet,
+        uint256 crowdfundMethodEvent
+    );
+    event CrowdfundGoalSet(bool crowdfundGoalSet, uint256 crowdfundGoalEvent);
+    event MintablePerWalletSet(
+        bool mintablePerWalletSet,
+        uint256 mintablePerWalletEvent
+    );
+    event MintActiveSet(bool mintActiveSet);
+
     //sets the collection supply limit
     function setSupply(uint256 _supplyLimit) public onlyOwner {
         supplyLimit = _supplyLimit;
     }
 
+    // Sets Sale period
+    function setSalePeriod(uint256 _startDate, uint256 _endDate)
+        external
+        onlyOwner
+    {
+        _setSalePeriod(_startDate, _endDate);
+    }
+
     // Sets number of redeems for newly minted tokens
     function setTokenRedeemsLimit(uint256 _number) external onlyOwner {
         redeemsLimit = _number;
+        emit TokenRedeemsLimitSet(true, _number);
     }
 
     // Sets number of redeems limit to a single token
-    function setTokenRedeems(uint256 tokenId, uint256 redeemsLimit) internal {
-        _setTokenRedeems(tokenId, redeemsLimit);
+    function setTokenRedeems(uint256 _tokenId, uint256 _redeemsLimit) internal {
+        _setTokenRedeems(_tokenId, _redeemsLimit);
     }
 
     //Override the number of redeems to all minted tokens
@@ -80,10 +104,12 @@ contract OneTMShowOff is
         require(_method <= 2, "Invalid Crowdfund Method");
         require(_method >= 0, "Invalid Crowdfund Method");
         _setCrowdfundMethod(_method);
+        emit CrowdfundMethodSet(true, _method);
     }
 
     function setCrowdfundGoal(uint256 _goal) external onlyOwner {
         _setCrowdfundGoal(_goal);
+        emit CrowdfundGoalSet(true, _goal);
     }
 
     function redeem(uint256 tokenId, uint256 ammount) external {
@@ -110,6 +136,7 @@ contract OneTMShowOff is
     // Sets `gallery` to be returned by `_baseURI()`
     function setGallery(string calldata _gallery) external onlyOwner {
         gallery = _gallery;
+        emit GallerySet(true);
     }
 
     // Sets `price` to be used in `presale()` and `mint()`(called on deployment)
@@ -120,6 +147,7 @@ contract OneTMShowOff is
     // Sets `vault` to recieve ETH from sales and used within `withdraw()`
     function setVault(address _vault) external onlyOwner {
         vault = _vault;
+        emit VaultSet(true);
     }
 
     // Sets `max mints per wallet`
@@ -130,7 +158,8 @@ contract OneTMShowOff is
     // Minting function used in the public sale
     function mint(uint256 _amount) external payable {
         uint256 supply = totalSupply();
-
+        uint256 timeNow = block.timestamp;
+        require(_verifySalePeriod(timeNow), "Is not the right time to mint");
         require(isActive, "Not Active");
         require(_amount <= mintablePerWallet, "Amount Denied");
         require(supply + _amount <= supplyLimit, "Supply Denied");

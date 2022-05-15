@@ -14,11 +14,15 @@ abstract contract Crowdfund is Context, Ownable {
     Crowdfund_Method internal crowdfund_method;
     uint256 goal;
     bool goalMet;
+    uint256 startDate;
+    uint256 endDate;
 
     constructor() {
         crowdfund_method = Crowdfund_Method.DEFAULT;
         goal = 0;
         goalMet = false;
+        startDate = 1;
+        endDate = 1;
     }
 
     function _setCrowdfundMethod(uint256 method) internal onlyOwner {
@@ -78,6 +82,25 @@ abstract contract Crowdfund is Context, Ownable {
         }
     }
 
-    //TODO implement crowdfund sale period
-    function _setCrowdfundSalePeriod() internal onlyOwner {}
+    function _setSalePeriod(uint256 _startDate, uint256 _endDate)
+        internal
+        onlyOwner
+    {
+        startDate = _startDate;
+        endDate = _endDate;
+    }
+
+    function _verifySalePeriod(uint256 txTime)
+        internal
+        onlyOwner
+        returns (bool)
+    {
+        if (startDate == 0 && endDate == 0) {
+            return true;
+        } else if (txTime >= startDate && txTime < endDate) {
+            return true;
+        } else {
+            return false;
+        }
+    }
 }

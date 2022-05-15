@@ -138,7 +138,7 @@ There are some helpful scripts in `helpful_scripts.py`.
 ## Testing
 
 ```
-brownie test
+brownie test -s --network rinkeby
 ```
 
 ## Linting
