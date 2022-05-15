@@ -35,12 +35,6 @@ contract OneTMShowOff is
         redeemsLimit = 0;
     }
 
-    ////////////////////////////////
-    ////////////////////////////////////////////
-    ///////////UNDER CONSTRUCTION//////////////////////
-    ///////////////////////////////////////////
-    ////////////////////////////////
-
     //sets the collection supply limit
     function setSupply(uint256 _supplyLimit) public onlyOwner {
         supplyLimit = _supplyLimit;
@@ -102,12 +96,6 @@ contract OneTMShowOff is
 
     //TODO update a single token metadata after redeem
     function updateTokenMetadata(bytes32 metadata, uint256 tokenId) public {}
-
-    ////////////////////////////////
-    ////////////////////////////////////////////
-    ///////////UNDER CONSTRUCTION//////////////////////
-    ///////////////////////////////////////////
-    ////////////////////////////////
 
     // Override of `_baseURI()` that returns `gallery`
     function _baseURI() internal view virtual override returns (string memory) {
