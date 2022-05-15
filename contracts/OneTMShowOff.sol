@@ -18,10 +18,10 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     uint256 public supplyLimit; // Amount of ETH required per mint
 
     // Sets `price` upon deployment
-    constructor(uint256 price, uint256 _supplyLimit)
+    constructor(uint256 _price, uint256 _supplyLimit)
         ERC721("OneTMShowOff", "OneTM")
     {
-        setPrice(price);
+        setPrice(_price);
         setSupply(_supplyLimit);
     }
 
@@ -32,7 +32,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     ////////////////////////////////
 
     //sets the collection supply limit
-    function setSupply(uint256 _supplyLimit) external onlyOwner {
+    function setSupply(uint256 _supplyLimit) public onlyOwner {
         supplyLimit = _supplyLimit;
     }
 
