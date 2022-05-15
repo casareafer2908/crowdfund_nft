@@ -34,7 +34,7 @@ def main():
 
     one_tm_show_off.setGallery(metadataLibrary, {"from": dev})
     one_tm_show_off.setVault(collectionVault, {"from": dev})
-    one_tm_show_off.setActive(isActive, {"from": dev})
+    one_tm_show_off.setMintActive(isActive, {"from": dev})
 
     deploy10()
 
