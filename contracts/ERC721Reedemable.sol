@@ -68,7 +68,6 @@ abstract contract ERC721Reedemable is Context, Ownable {
         redeem_state = (_state == true ? Redeem_State.ON : Redeem_State.OFF);
     }
 
-    //TODO save redeem times, update token metadata
     function _redeem(uint256 _tokenId, uint256 _ammount) internal {
         require(
             redeem_state == Redeem_State.ON,

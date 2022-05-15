@@ -21,40 +21,56 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
         setPrice(_price);
     }
 
-    ///////////UNDER CONSTRUCTION
+    ////////////////////////////////
+    ////////////////////////////////////////////
+    ///////////UNDER CONSTRUCTION//////////////////////
+    ///////////////////////////////////////////
+    ////////////////////////////////
 
     //Sets number of redeems limit to a single token
-    function setTokenRedeems(uint256 tokenId, uint256 redeemsLimit)
+    function setTokenRedeems(uint256 _tokenId, uint256 _redeemsLimit)
         public
         onlyOwner
     {
-        require(_exists(tokenId), "ERC721 Token doesn't exist");
-        _setTokenRedeems(tokenId, redeemsLimit);
+        require(_exists(_tokenId), "ERC721 Token doesn't exist");
+        _setTokenRedeems(_tokenId, _redeemsLimit);
     }
 
     //Sets number of redeems to all minted tokens
-    function setAllTokensRedeems(uint256 redeemsLimit) public onlyOwner {
-        uint256 supply = totalSupply();
-        require(supply > 0, "No tokens minted to set redeem limit");
-        _setAllTokensRedeems(redeemsLimit, supply);
+    function setAllTokensRedeems(uint256 _redeemsLimit) public onlyOwner {
+        uint256 _supply = totalSupply();
+        require(_supply > 0, "No tokens minted to set redeem limit");
+        _setAllTokensRedeems(_redeemsLimit, _supply);
     }
 
     // Reads available redeems for a token
-    function readTokenRedeemLimit(uint256 tokenId)
+    function readTokenRedeemLimit(uint256 _tokenId)
         public
         view
         returns (uint256)
     {
-        require(_exists(tokenId), "ERC721 Token doesn't exist");
-        return _readTokenRedeemLimit(tokenId);
+        require(_exists(_tokenId), "ERC721 Token doesn't exist");
+        return _readTokenRedeemLimit(_tokenId);
+    }
+
+    // Set redeems Available - Unavailable
+    function setRedeemState(bool _state) public onlyOwner {
+        _setRedeemState(_state);
     }
 
     //TODO implement function
-    function redeem(uint256 tokenId) {
-        _redeem(tokenId);
+    function redeem(uint256 _tokenId, uint256 _ammount) public {
+        _redeem(_tokenId, _ammount);
     }
 
-    //////////////
+    //TODO update a single token metadata
+    function updateTokenMetadata(bytes32 _metadata, uint256 _tokenId) public {}
+
+    ////////////////////////////////
+    ////////////////////////////////////////////
+    ///////////UNDER CONSTRUCTION//////////////////////
+    ///////////////////////////////////////////
+    ////////////////////////////////
 
     // Override of `_baseURI()` that returns `gallery`
     function _baseURI() internal view virtual override returns (string memory) {
@@ -62,7 +78,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     }
 
     // Sets `isActive` to turn on/off minting in `mint()`
-    function setActive(bool _isActive) external onlyOwner {
+    function setMintActive(bool _isActive) external onlyOwner {
         isActive = _isActive;
     }
 
