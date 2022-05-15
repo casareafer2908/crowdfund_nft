@@ -22,19 +22,25 @@ abstract contract ERC721Reedemable is Context, Ownable {
     }
 
     //maps
+    //todo do this map internal
     mapping(uint256 => Redeem_State) public tokenIdToRedeemState;
-    mapping(uint256 => uint256) public tokenIdToRemainingRedeems;
+    mapping(uint256 => uint256) internal tokenIdToRemainingRedeems;
+
+    //events
+    event SetTokenLimit(uint256 tokenId, uint256 redeemsLimit);
+    event SetAllTokensLimit(uint256 redeemsLimit);
 
     //Sets number of redeems limit to a single token
-    function _setTokenRedeems(uint256 tokenId, uint256 redeemsLimit)
+    function _setTokenRedeemss(uint256 tokenId, uint256 redeemsLimit)
         internal
         onlyOwner
     {
         tokenIdToRemainingRedeems[tokenId] = redeemsLimit;
+        emit SetTokenLimit(tokenId, redeemsLimit);
     }
 
     //Sets number of redeems limit to minted tokens
-    function _setAllTokensRedeems(uint256 redeemsLimit, uint256 tokenList)
+    function _setAllTokensRedeemss(uint256 redeemsLimit, uint256 tokenList)
         internal
         onlyOwner
     {
@@ -43,6 +49,7 @@ abstract contract ERC721Reedemable is Context, Ownable {
             tokenIdToRemainingRedeems[i] = redeemsLimit;
             i++;
         }
+        emit SetAllTokensLimit(redeemsLimit);
     }
 
     //Returns available redeems
