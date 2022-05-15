@@ -10,6 +10,7 @@ collectionVault = config["networks"][network.show_active()]["collection_vault"]
 
 
 isActive = True
+redeemsLimit = 1
 
 
 def deploy10():
@@ -35,7 +36,8 @@ def main():
     one_tm_show_off.setGallery(metadataLibrary, {"from": dev})
     one_tm_show_off.setVault(collectionVault, {"from": dev})
     one_tm_show_off.setMintActive(isActive, {"from": dev})
-
     deploy10()
+    one_tm_show_off.setRedeemState(isActive, {"from": dev})
+    one_tm_show_off.setAllTokensRedeems(redeemsLimit, {"from": dev})
 
     return one_tm_show_off

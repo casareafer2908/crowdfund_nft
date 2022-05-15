@@ -28,43 +28,43 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     ////////////////////////////////
 
     //Sets number of redeems limit to a single token
-    function setTokenRedeems(uint256 _tokenId, uint256 _redeemsLimit)
-        public
+    function setTokenRedeems(uint256 tokenId, uint256 redeemsLimit)
+        external
         onlyOwner
     {
-        require(_exists(_tokenId), "ERC721 Token doesn't exist");
-        _setTokenRedeems(_tokenId, _redeemsLimit);
+        require(_exists(tokenId), "ERC721 Token doesn't exist");
+        _setTokenRedeems(tokenId, redeemsLimit);
     }
 
     //Sets number of redeems to all minted tokens
-    function setAllTokensRedeems(uint256 _redeemsLimit) public onlyOwner {
-        uint256 _supply = totalSupply();
-        require(_supply > 0, "No tokens minted to set redeem limit");
-        _setAllTokensRedeems(_redeemsLimit, _supply);
+    function setAllTokensRedeems(uint256 redeemsLimit) external onlyOwner {
+        uint256 supply = totalSupply();
+        require(supply > 0, "No tokens minted to set redeem limit");
+        _setAllTokensRedeems(redeemsLimit, supply);
     }
 
     // Reads available redeems for a token
-    function readTokenRedeemLimit(uint256 _tokenId)
-        public
+    function readTokenRedeemLimit(uint256 tokenId)
+        external
         view
         returns (uint256)
     {
-        require(_exists(_tokenId), "ERC721 Token doesn't exist");
-        return _readTokenRedeemLimit(_tokenId);
+        require(_exists(tokenId), "ERC721 Token doesn't exist");
+        return _readTokenRedeemLimit(tokenId);
     }
 
     // Set redeems Available - Unavailable
-    function setRedeemState(bool _state) public onlyOwner {
-        _setRedeemState(_state);
+    function setRedeemState(bool state) external onlyOwner {
+        _setRedeemState(state);
     }
 
     //TODO implement function
-    function redeem(uint256 _tokenId, uint256 _ammount) public {
-        _redeem(_tokenId, _ammount);
+    function redeem(uint256 tokenId, uint256 ammount) external {
+        _redeem(tokenId, ammount);
     }
 
     //TODO update a single token metadata
-    function updateTokenMetadata(bytes32 _metadata, uint256 _tokenId) public {}
+    function updateTokenMetadata(bytes32 metadata, uint256 tokenId) public {}
 
     ////////////////////////////////
     ////////////////////////////////////////////
