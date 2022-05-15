@@ -154,7 +154,7 @@ contract OneTMShowOff is
             setTokenRedeems(supply + i, redeemsLimit);
         }
         //If the goal is met, holders will be able to redeem
-        if (_verifyCrowdfundGoal(supply)) {
+        if (_verifyCrowdfundGoal(totalSupply())) {
             setRedeemState(true);
         }
     }

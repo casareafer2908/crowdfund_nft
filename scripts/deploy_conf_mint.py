@@ -12,6 +12,7 @@ collectionVault = config["networks"][network.show_active()]["collection_vault"]
 isActive = True
 redeemsLimit = 1
 setSupply = 555
+mintsPerWallet = 10
 
 # Crowdfund method
 # 0 => Default
@@ -34,6 +35,7 @@ def main():
     # human readable plz
     print(f"Set token price ==> {Web3.fromWei(setPrice, 'ether')} ETH")
     print(f"Set Supply Limit ==> {setSupply}")
+    print(f"Set redeems per NFT ==> {redeemsLimit}")
     one_tm_show_off = OneTMShowOff.deploy(
         setPrice,
         setSupply,
@@ -42,13 +44,13 @@ def main():
     )
     # make sure you've got the latest contract
     one_tm_show_off = OneTMShowOff[len(OneTMShowOff) - 1]
-
     one_tm_show_off.setGallery(metadataLibrary, {"from": dev})
     one_tm_show_off.setVault(collectionVault, {"from": dev})
-    one_tm_show_off.setMintActive(isActive, {"from": dev})
-    deploy10()
-    print(f"redeemsLimmit=> {redeemsLimit}")
     one_tm_show_off.setTokenRedeemsLimit(redeemsLimit, {"from": dev})
     one_tm_show_off.setCrowdfundMethod(crowfundMethod, {"from": dev})
+    one_tm_show_off.setCrowdfundGoal(crowdfundGoal, {"from": dev})
+    one_tm_show_off.setMintablePerWallet(mintsPerWallet, {"from": dev})
+    one_tm_show_off.setMintActive(isActive, {"from": dev})
+    deploy10()
 
     return one_tm_show_off
