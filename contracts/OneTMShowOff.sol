@@ -67,12 +67,11 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
         _setRedeemState(state);
     }
 
-    //TODO implement function
     function redeem(uint256 tokenId, uint256 ammount) external {
         _redeem(tokenId, ammount);
     }
 
-    //TODO update a single token metadata
+    //TODO update a single token metadata after redeem
     function updateTokenMetadata(bytes32 metadata, uint256 tokenId) public {}
 
     ////////////////////////////////
