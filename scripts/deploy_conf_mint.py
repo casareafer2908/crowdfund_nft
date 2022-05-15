@@ -13,6 +13,13 @@ isActive = True
 redeemsLimit = 1
 setSupply = 555
 
+# Crowdfund method
+# 0 => Default
+# 1 => Eth Raised
+# 2 => Mint number
+crowfundMethod = 2
+crowdfundGoal = 3
+
 
 def deploy10():
     toDeploy = 1
@@ -40,8 +47,8 @@ def main():
     one_tm_show_off.setVault(collectionVault, {"from": dev})
     one_tm_show_off.setMintActive(isActive, {"from": dev})
     deploy10()
-    one_tm_show_off.setRedeemState(isActive, {"from": dev})
     print(f"redeemsLimmit=> {redeemsLimit}")
-    one_tm_show_off.setAllTokensRedeems(redeemsLimit, {"from": dev})
+    one_tm_show_off.setTokenRedeemsLimit(redeemsLimit, {"from": dev})
+    one_tm_show_off.setCrowdfundMethod(crowfundMethod, {"from": dev})
 
     return one_tm_show_off

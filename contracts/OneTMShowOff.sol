@@ -23,14 +23,16 @@ contract OneTMShowOff is
     uint256 public price;
     uint256 public supplyLimit; // Amount of ETH required per mint
     uint256 public mintablePerWallet;
+    uint256 internal redeemsLimit;
 
-    // Sets `price`, `nft supply` and `mints per wallet` upon deployment
+    // Sets `price`, `nft supply`, `mints per wallet` and `redeems per nft` upon deployment
     constructor(uint256 _price, uint256 _supplyLimit)
         ERC721("OneTMShowOff", "OneTM")
     {
         setPrice(_price);
         setSupply(_supplyLimit);
         mintablePerWallet = 2;
+        redeemsLimit = 0;
     }
 
     ////////////////////////////////
@@ -44,20 +46,21 @@ contract OneTMShowOff is
         supplyLimit = _supplyLimit;
     }
 
+    // Sets number of redeems for newly minted tokens
+    function setTokenRedeemsLimit(uint256 _number) external onlyOwner {
+        redeemsLimit = _number;
+    }
+
     // Sets number of redeems limit to a single token
-    function setTokenRedeems(uint256 tokenId, uint256 redeemsLimit)
-        external
-        onlyOwner
-    {
-        require(_exists(tokenId), "ERC721 Token doesn't exist");
+    function setTokenRedeems(uint256 tokenId, uint256 redeemsLimit) internal {
         _setTokenRedeems(tokenId, redeemsLimit);
     }
 
-    //Sets number of redeems to all minted tokens
-    function setAllTokensRedeems(uint256 redeemsLimit) external onlyOwner {
+    //Override the number of redeems to all minted tokens
+    function setAllTokensRedeems(uint256 _redeemsLimit) external onlyOwner {
         uint256 supply = totalSupply();
         require(supply > 0, "No tokens minted to set redeem limit");
-        _setAllTokensRedeems(redeemsLimit, supply);
+        _setAllTokensRedeems(_redeemsLimit, supply);
     }
 
     // Reads available redeems for a token
@@ -148,6 +151,7 @@ contract OneTMShowOff is
 
         for (uint256 i; i < _amount; i++) {
             _safeMint(msg.sender, supply + i);
+            setTokenRedeems(supply + i, redeemsLimit);
         }
         //If the goal is met, holders will be able to redeem
         if (_verifyCrowdfundGoal(supply)) {
