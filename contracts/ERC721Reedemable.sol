@@ -26,6 +26,7 @@ abstract contract ERC721Reedemable is Context, Ownable {
         internal
         onlyOwner
     {
+        require(redeemsLimit >= 0, "Invalid redeems limit");
         tokenIdToRemainingRedeems[tokenId] = redeemsLimit;
         emit SetTokenLimit(tokenId, redeemsLimit);
     }
@@ -35,6 +36,7 @@ abstract contract ERC721Reedemable is Context, Ownable {
         internal
         onlyOwner
     {
+        require(redeemsLimit >= 0, "Invalid redeems limit");
         uint256 i = 0;
         while (i < tokenList) {
             tokenIdToRemainingRedeems[i] = redeemsLimit;
@@ -66,6 +68,7 @@ abstract contract ERC721Reedemable is Context, Ownable {
             redeem_state == Redeem_State.ON,
             "Redeems are not available right now"
         );
+        require(ammount > 0, "Invalid redeem ammount");
         uint256 availableRedeems = tokenIdToRemainingRedeems[tokenId];
         require(availableRedeems > 0, "You have no redeems left");
         require(availableRedeems >= ammount, "You have not enough redeems");
