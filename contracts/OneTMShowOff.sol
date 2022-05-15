@@ -16,6 +16,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     string public gallery; // Reference to image and metadata storage
     uint256 public price;
     uint256 public supplyLimit; // Amount of ETH required per mint
+    uint256 public mintablePerWallet;
 
     // Sets `price` upon deployment
     constructor(uint256 _price, uint256 _supplyLimit)
@@ -23,6 +24,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     {
         setPrice(_price);
         setSupply(_supplyLimit);
+        mintablePerWallet = 2;
     }
 
     ////////////////////////////////
@@ -63,7 +65,7 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
     }
 
     // Set redeems Available - Unavailable
-    function setRedeemState(bool state) external onlyOwner {
+    function setRedeemState(bool state) internal {
         _setRedeemState(state);
     }
 
@@ -105,18 +107,27 @@ contract OneTMShowOff is ERC721Enumerable, Ownable, ERC721Reedemable {
         vault = _vault;
     }
 
+    // Sets `max mints per wallet`
+    function setMintablePerWallet(uint256 _number) external onlyOwner {
+        mintablePerWallet = _number;
+    }
+
     // Minting function used in the public sale
     function mint(uint256 _amount) external payable {
         uint256 supply = totalSupply();
 
         require(isActive, "Not Active");
-        require(_amount < 3, "Amount Denied");
+        require(_amount <= mintablePerWallet, "Amount Denied");
         require(supply + _amount <= supplyLimit, "Supply Denied");
         require(tx.origin == msg.sender, "Contract Denied");
         require(msg.value >= price * _amount, "Ether Amount Denied");
 
         for (uint256 i; i < _amount; i++) {
             _safeMint(msg.sender, supply + i);
+        }
+        //If the goal is met, holders will be able to redeem
+        if (_verifyCrowdfundGoal()) {
+            setRedeemState(true);
         }
     }
 
