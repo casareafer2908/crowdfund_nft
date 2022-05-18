@@ -115,7 +115,6 @@ def gas_failed_tx():
 
 # Test that the contract deploys successfully
 def test_contract_deployment(rinkeby_test_contract, setPrice, setSupply, developer):
-    print(f"Deployed Contract address ==> {rinkeby_test_contract.address}")
     print(f"Assert that the price set is correct...")
     assert rinkeby_test_contract.price({"from": developer}) == setPrice
     print(f"Assert that the supply limit is correct...")
@@ -132,7 +131,6 @@ def test_contract_configuration(
     mintsPerTransaction,
     collectionVault,
 ):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print("Setting Gallery...")
     latest_contract.setGallery(metadataLibrary, {"from": developer})
     print("Gallery set, setting Vault...")
@@ -165,7 +163,6 @@ def test_contract_configuration(
 
 # Contract owner can set up a period of time to mint (Successful mint time)
 def test_owner_set_right_time(succeedTestTime, latest_contract, developer):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print(f"Setting sale period...")
     starts = succeedTestTime[0]
     print(f"Starts ==> {datetime.fromtimestamp(starts)}")
@@ -182,7 +179,6 @@ def test_owner_set_right_time(succeedTestTime, latest_contract, developer):
 
 # Test user can't mint if mint is not active even within the mint period
 def test_mint_correct_time_mint_not_active(latest_contract, developer, gas_failed_tx):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print("Minting test... It must fail since the mint is not active...")
     with pytest.raises(ValueError):
         latest_contract.mint(
@@ -208,7 +204,6 @@ def test_owner_can_set_mint_active(latest_contract, developer):
 
 # Test user can mint if is within a given period of time and the mint is active
 def test_mint_correct_time_mint_active(latest_contract, developer):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print("Minting test... You can mint!")
     latest_contract.mint(
         1,
@@ -223,7 +218,6 @@ def test_mint_correct_time_mint_active(latest_contract, developer):
 def test_owner_can_set_incorrect_time_ended(
     failTestTimeEnded, latest_contract, developer
 ):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print(f"Setting sale period...")
     starts = failTestTimeEnded[0]
     print(f"Starts ==> {datetime.fromtimestamp(starts)}")
@@ -242,7 +236,6 @@ def test_owner_can_set_incorrect_time_ended(
 def test_mint_incorrect_time_ended_mint_active(
     latest_contract, developer, gas_failed_tx
 ):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print("Minting test... It must fail since the mint already ended...")
     with pytest.raises(ValueError):
         latest_contract.mint(
@@ -268,7 +261,6 @@ def test_owner_can_set_mint_not_active(latest_contract, developer):
 
 # Test user can not mint if the mint is not active and the mint time ended
 def test_mint_incorrect_time_mint_not_active(latest_contract, developer, gas_failed_tx):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print(
         "Minting test... It must fail since the mint is not active and the time has ended..."
     )
@@ -287,7 +279,6 @@ def test_mint_incorrect_time_mint_not_active(latest_contract, developer, gas_fai
 def test_owner_can_set_incorrect_time_not_yet_start(
     failTestTimeNotYetStart, latest_contract, developer
 ):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print(f"Setting sale period...")
     starts = failTestTimeNotYetStart[0]
     print(f"Starts ==> {datetime.fromtimestamp(starts)}")
@@ -306,7 +297,6 @@ def test_owner_can_set_incorrect_time_not_yet_start(
 def test_mint_incorrect_time_ended_mint_not_active(
     latest_contract, developer, gas_failed_tx
 ):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print(
         "Minting test... It must fail since the mint is not yet started and mint is not active..."
     )
@@ -325,7 +315,6 @@ def test_mint_incorrect_time_ended_mint_not_active(
 def test_mint_incorrect_time_ended_mint_active(
     latest_contract, developer, gas_failed_tx
 ):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print("Setting mint -->ON<--")
     latest_contract.setMintActive(True, {"from": developer})
     print("Mint set -->ON<--")
@@ -347,7 +336,6 @@ def test_mint_incorrect_time_ended_mint_active(
 def test_owner_can_set_infinite_time(
     succeedTestTimeAlwaysOpen, latest_contract, developer
 ):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print(f"Setting sale period...")
     starts = succeedTestTimeAlwaysOpen[0]
     print(f"Starts ==> {datetime.fromtimestamp(starts)}")
@@ -364,7 +352,6 @@ def test_owner_can_set_infinite_time(
 
 # Test user can mint if the sales period is set 0 - 0 (always can mint)
 def test_mint_correct_time_mint_active(latest_contract, developer):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print("Minting test... You have infinite time to mint!")
     latest_contract.mint(
         1,
@@ -377,7 +364,6 @@ def test_mint_correct_time_mint_active(latest_contract, developer):
 
 # Test user cant mint if the sales period is infinite but the mint is not active
 def test_mint_infinite_time_mint_not_active(latest_contract, developer, gas_failed_tx):
-    print(f"Used Contract address ==> {latest_contract.address}")
     print("Setting mint -->OFF<--")
     latest_contract.setMintActive(False, {"from": developer})
     print("Mint set --OFF<--")
@@ -397,7 +383,6 @@ def test_mint_infinite_time_mint_not_active(latest_contract, developer, gas_fail
 
 # Test user can't mint over the max mints per transaction (limit 4)
 def test_mint_too_many_tokens(latest_contract, developer, gas_failed_tx):
-    print(f"Used Contract address ==> {latest_contract.address}")
 
     print("Minting test... You Can't mint that many tokens at once!!")
     with pytest.raises(ValueError):
@@ -413,9 +398,7 @@ def test_mint_too_many_tokens(latest_contract, developer, gas_failed_tx):
 
 # Test user can't mint if the eth sent is not enough
 def test_mint_not_enough_eth(latest_contract, developer, gas_failed_tx):
-    print(f"Used Contract address ==> {latest_contract.address}")
-
-    print("Minting test... You need to spend more eth!!")
+    print("Minting test... Will Fail!! You need to spend more eth!!")
     with pytest.raises(ValueError):
         latest_contract.mint(
             4,
