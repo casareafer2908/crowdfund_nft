@@ -22,7 +22,7 @@ contract OneTMShowOff is
     string public gallery; // Reference to image and metadata storage
     uint256 public price; // Amount of ETH required per mint
     uint256 public supplyLimit;
-    uint256 public mintablePerWallet;
+    uint256 public mintablePerTransaction;
     uint256 internal redeemsLimit;
 
     // Sets `price`, `nft supply`, `mints per wallet` and `redeems per nft` upon deployment
@@ -31,7 +31,7 @@ contract OneTMShowOff is
     {
         setPrice(_price);
         setSupply(_supplyLimit);
-        mintablePerWallet = 2;
+        mintablePerTransaction = 2;
         redeemsLimit = 0;
     }
 
@@ -44,9 +44,9 @@ contract OneTMShowOff is
         uint256 crowdfundMethodEvent
     );
     event CrowdfundGoalSet(bool crowdfundGoalSet, uint256 crowdfundGoalEvent);
-    event MintablePerWalletSet(
-        bool mintablePerWalletSet,
-        uint256 mintablePerWalletEvent
+    event MintablePerTransactionSet(
+        bool mintablePerTransactionSet,
+        uint256 mintablePerTransactionEvent
     );
     event MintActiveSet(bool mintActiveSet);
 
@@ -150,9 +150,9 @@ contract OneTMShowOff is
         emit VaultSet(true);
     }
 
-    // Sets `max mints per wallet`
-    function setMintablePerWallet(uint256 _number) external onlyOwner {
-        mintablePerWallet = _number;
+    // Sets `max mints per transaction`
+    function setMintablePerTransaction(uint256 _number) external onlyOwner {
+        mintablePerTransaction = _number;
     }
 
     // Minting function used in the public sale
@@ -161,7 +161,7 @@ contract OneTMShowOff is
         uint256 timeNow = block.timestamp;
         require(_verifySalePeriod(timeNow), "Is not the right time to mint");
         require(isActive, "Not Active");
-        require(_amount <= mintablePerWallet, "Amount Denied");
+        require(_amount <= mintablePerTransaction, "Amount Denied");
         require(supply + _amount <= supplyLimit, "Supply Denied");
         require(tx.origin == msg.sender, "Contract Denied");
         require(msg.value >= price * _amount, "Ether Amount Denied");
