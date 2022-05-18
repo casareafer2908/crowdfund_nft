@@ -23,7 +23,7 @@ contract OneTMShowOff is
     uint256 public price; // Amount of ETH required per mint
     uint256 public supplyLimit;
     uint256 public mintablePerTransaction;
-    uint256 internal redeemsLimit;
+    uint256 public redeemsLimit;
 
     // Sets `price`, `nft supply`, `mints per wallet` and `redeems per nft` upon deployment
     constructor(uint256 _price, uint256 _supplyLimit)

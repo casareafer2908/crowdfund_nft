@@ -12,10 +12,10 @@ abstract contract Crowdfund is Context, Ownable {
         DEFAULT
     }
     Crowdfund_Method internal crowdfund_method;
-    uint256 goal;
+    uint256 public goal;
     bool goalMet;
-    uint256 startDate;
-    uint256 endDate;
+    uint256 public startDate;
+    uint256 public endDate;
 
     constructor() {
         crowdfund_method = Crowdfund_Method.DEFAULT;
@@ -38,11 +38,11 @@ abstract contract Crowdfund is Context, Ownable {
     function readCrowdfundMethod() public view returns (bytes32) {
         bytes32 method;
         if (crowdfund_method == Crowdfund_Method.DEFAULT) {
-            method = "Default";
+            method = "DEFAULT";
         } else if (crowdfund_method == Crowdfund_Method.ETH_RAISED) {
-            method = "ETH Raised";
+            method = "ETH_RAISED";
         } else {
-            method = "Mints number";
+            method = "MINT_NUMBER";
         }
         return method;
     }
