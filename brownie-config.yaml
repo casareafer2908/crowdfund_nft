@@ -55,5 +55,6 @@ networks:
     eth_usd_price_feed: '0xF9680D99D6C9589e2a93a78A04A279e509205945'
 wallets:
   from_key: ${PRIVATE_KEY}
+  from_key_test: ${PRIVATE_KEY_TEST}
   from_mnemonic: ${MNEMONIC}
   # You'd have to change the accounts.add to accounts.from_mnemonic to use from_mnemonic

@@ -16,6 +16,11 @@ def developer():
 
 
 @pytest.fixture
+def badActor():
+    return accounts.add(config["wallets"]["from_key_test"])
+
+
+@pytest.fixture
 def setPrice():
     return config["networks"][network.show_active()]["token_price"]
 
@@ -122,7 +127,7 @@ def test_contract_deployment(rinkeby_test_contract, setPrice, setSupply, develop
     print("Done!")
 
 
-# Test that the contract is successfully configured
+# Test that the contract cant be configured by Bad Actors
 def test_contract_configuration(
     latest_contract,
     developer,
@@ -155,6 +160,64 @@ def test_contract_configuration(
         == mintsPerTransaction
     )
     assert latest_contract.isActive({"from": developer}) == False
+
+
+# Test that a bad actor can't change configurations
+def test_contract_configuration_bad_actor(
+    latest_contract,
+    badActor,
+    redeemsLimitPerToken,
+    metadataLibrary,
+    mintsPerTransaction,
+    collectionVault,
+    gas_failed_tx,
+):
+    print("Setting Gallery...")
+    with pytest.raises(ValueError):
+        latest_contract.setGallery(
+            metadataLibrary,
+            {
+                "from": badActor,
+                "gas_limit": gas_failed_tx,
+            },
+        )
+    print("Gallery NOT SET, setting Vault...")
+    with pytest.raises(ValueError):
+        latest_contract.setVault(
+            collectionVault,
+            {
+                "from": badActor,
+                "gas_limit": gas_failed_tx,
+            },
+        )
+    print("Vault NOT SET, setting Token Redeems Limit...")
+    with pytest.raises(ValueError):
+        latest_contract.setTokenRedeemsLimit(
+            redeemsLimitPerToken,
+            {
+                "from": badActor,
+                "gas_limit": gas_failed_tx,
+            },
+        )
+    print("Token Redeems Limit NOT SET, setting Mints per transaction...")
+    with pytest.raises(ValueError):
+        latest_contract.setMintablePerTransaction(
+            mintsPerTransaction,
+            {
+                "from": badActor,
+                "gas_limit": gas_failed_tx,
+            },
+        )
+    print("Mints per transaction NOT SET, setting mint -->OFF<--")
+    with pytest.raises(ValueError):
+        latest_contract.setMintActive(
+            False,
+            {
+                "from": badActor,
+                "gas_limit": gas_failed_tx,
+            },
+        )
+    print("Mint config NOT SET, DIDN'T SET ANYTHING! test pass!!")
 
 
 ###
