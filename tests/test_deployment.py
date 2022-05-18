@@ -294,8 +294,8 @@ def test_owner_can_set_incorrect_time_not_yet_start(
     print(f"Ends ==> {datetime.fromtimestamp(ends)}")
     latest_contract.setSalePeriod(starts, ends, {"from": developer})
     print("Time set, asserting times...")
-    assert latest_contract.startDate({"from": developer}) == failTestTimeNotYetStart
-    assert latest_contract.endDate({"from": developer}) == failTestTimeNotYetStart
+    assert latest_contract.startDate({"from": developer}) == starts
+    assert latest_contract.endDate({"from": developer}) == ends
     print("wait 5 secs for blockchain to update")
     time.sleep(5)
     print("Go!")
@@ -354,8 +354,8 @@ def test_owner_can_set_infinite_time(
     print(f"Ends ==> {datetime.fromtimestamp(ends)}")
     latest_contract.setSalePeriod(starts, ends, {"from": developer})
     print("Time set, asserting times...")
-    assert latest_contract.startDate({"from": developer}) == succeedTestTimeAlwaysOpen
-    assert latest_contract.endDate({"from": developer}) == succeedTestTimeAlwaysOpen
+    assert latest_contract.startDate({"from": developer}) == starts
+    assert latest_contract.endDate({"from": developer}) == ends
     print("wait 5 secs for blockchain to update")
     time.sleep(5)
     print("Go!")
@@ -375,7 +375,7 @@ def test_mint_correct_time_mint_active(latest_contract, developer):
 
 
 # Test user cant mint if the sales period is infinite but the mint is not active
-def test_mint_correct_time_mint_active(latest_contract, developer):
+def test_mint_correct_time_mint_not_active(latest_contract, developer):
     print(f"Used Contract address ==> {latest_contract.address}")
     print("Setting mint -->OFF<--")
     latest_contract.setMintActive(False, {"from": developer})
@@ -383,13 +383,15 @@ def test_mint_correct_time_mint_active(latest_contract, developer):
     print("wait 5 secs for blockchain to update")
     time.sleep(5)
     print("Minting test... You Can't mint even with your time!!")
-    latest_contract.mint(
-        1,
-        {
-            "from": developer,
-            "value": Web3.toWei(0.01, "ether"),
-        },
-    )
+    with pytest.raises(ValueError):
+        latest_contract.mint(
+            1,
+            {
+                "from": developer,
+                "value": Web3.toWei(0.01, "ether"),
+                "gas_limit": gas_failed_tx,
+            },
+        )
 
 
 # test that an user can't mint over the max mints per transaction
