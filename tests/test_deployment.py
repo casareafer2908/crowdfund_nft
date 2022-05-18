@@ -1,7 +1,9 @@
+import brownie
 import pytest
-import datetime
+from datetime import datetime
 import pytz
-from brownie import OneTMShowOff, accounts, network, config
+import time
+from brownie import OneTMShowOff, accounts, network, config, exceptions
 from scripts.helpful_scripts import (
     get_publish_source,
 )
@@ -12,55 +14,67 @@ from web3 import Web3
 def developer():
     return accounts.add(config["wallets"]["from_key"])
 
+
 @pytest.fixture
 def setPrice():
     return config["networks"][network.show_active()]["token_price"]
+
 
 @pytest.fixture
 def setSupply():
     return 555
 
+
 @pytest.fixture
 def metadataLibrary():
     return config["networks"][network.show_active()]["metadata_library"]
+
 
 @pytest.fixture
 def collectionVault():
     return config["networks"][network.show_active()]["collection_vault"]
 
-@pytest.fixture
-def payableAmmount(mintAmmount):
-    return mintAmmount * 0.01
 
 @pytest.fixture
-def failTestTime():
+def failTestTimeNotYetStart():
     startTime = datetime.datetime(
-    2022, 5, 20, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
+        2022, 5, 20, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
     )
     endTime = datetime.datetime(
         2022, 5, 23, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
     )
-    return [startTime,endTime]
+    return [startTime, endTime]
+
+
+@pytest.fixture
+def failTestTimeEnded():
+    startTime = datetime.datetime(
+        2022, 5, 10, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
+    )
+    endTime = datetime.datetime(
+        2022, 5, 15, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
+    )
+    return [startTime, endTime]
+
 
 @pytest.fixture
 def succeedTestTime():
-    startTime = datetime.datetime(
-    2022, 5, 17, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
-    )
-    endTime = datetime.datetime(
-        2022, 5, 23, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
-    )
-    return [startTime,endTime]
+    startTime = datetime(2022, 5, 17, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei"))
+    endTime = datetime(2022, 5, 23, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei"))
+    return [startTime.timestamp(), endTime.timestamp()]
+
 
 @pytest.fixture
 def alwaysActiveTestTime():
     startTime = 0
     endTime = 0
-    return [startTime,endTime]
+    return [startTime, endTime]
+
 
 @pytest.fixture
-def mintsPerWallet():
+def mintsPerTransaction():
     return 3
+
 
 @pytest.fixture
 def redeemsLimitPerToken():
@@ -74,7 +88,9 @@ def rinkeby_test_contract(setPrice, developer, setSupply):
     deployed = OneTMShowOff.deploy(
         setPrice,
         setSupply,
-        {"from": developer},
+        {
+            "from": developer,
+        },
         publish_source=get_publish_source(),
     )
     print(f"Contract deployed in address ==> {deployed.address}")
@@ -85,10 +101,20 @@ def rinkeby_test_contract(setPrice, developer, setSupply):
 @pytest.fixture
 def latest_contract(OneTMShowOff):
     contract = OneTMShowOff[len(OneTMShowOff) - 1]
-    print (f"Used Contract address ==> {contract.address}")
+    print(f"Used Contract address ==> {contract.address}")
     return contract
 
 
+@pytest.fixture
+def gas_failed_tx():
+    return 500000
+
+
+###
+# Test Contract Deployment
+###
+
+# Test that the contract deploys successfully
 def test_contract_deployment(rinkeby_test_contract, setPrice, setSupply, developer):
     print(f"Deployed Contract address ==> {rinkeby_test_contract.address}")
     print(f"Assert that the price set is correct...")
@@ -97,4 +123,116 @@ def test_contract_deployment(rinkeby_test_contract, setPrice, setSupply, develop
     assert rinkeby_test_contract.supplyLimit({"from": developer}) == setSupply
     print("Done!")
 
-def test_contract_configuration(latest_contract,developer):
+
+# Test that the contract is successfully configured
+def test_contract_configuration(
+    latest_contract,
+    developer,
+    redeemsLimitPerToken,
+    metadataLibrary,
+    mintsPerTransaction,
+    collectionVault,
+):
+    print(f"Used Contract address ==> {latest_contract.address}")
+    print("Setting Gallery...")
+    latest_contract.setGallery(metadataLibrary, {"from": developer})
+    print("Gallery set, setting Vault...")
+    latest_contract.setVault(collectionVault, {"from": developer})
+    print("Vault set, setting Token Redeems Limit...")
+    latest_contract.setTokenRedeemsLimit(redeemsLimitPerToken, {"from": developer})
+    print("Token Redeems Limit set, setting Mints per transaction...")
+    latest_contract.setMintablePerTransaction(mintsPerTransaction, {"from": developer})
+    print("Mints per transaction set, setting mint -->OFF<--")
+    latest_contract.setMintActive(False, {"from": developer})
+    print("Mint set -->OFF<--")
+    print("wait 5 secs for blockchain to update")
+    time.sleep(5)
+    print("Asserting all configurations...")
+
+    assert latest_contract.gallery({"from": developer}) == metadataLibrary
+    assert latest_contract.vault({"from": developer}) == collectionVault
+    assert latest_contract.redeemsLimit({"from": developer}) == redeemsLimitPerToken
+    assert (
+        latest_contract.mintablePerTransaction({"from": developer})
+        == mintsPerTransaction
+    )
+    assert latest_contract.isActive({"from": developer}) == False
+
+
+###
+# Test Mint Functionality
+###
+
+# Test user cant mint if the mint sale is not active even if the period of time
+def test_mint_within_a_given_time(
+    latest_contract, developer, gas_failed_tx, succeedTestTime
+):
+    print(f"Used Contract address ==> {latest_contract.address}")
+    print(f"Setting sale period...")
+    starts = succeedTestTime[0]
+    print(f"Starts ==> {datetime.fromtimestamp(starts)}")
+    ends = succeedTestTime[1]
+    print(f"Ends ==> {datetime.fromtimestamp(ends)}")
+    latest_contract.setSalePeriod(starts, ends, {"from": developer})
+    print("Time set, asserting times...")
+    assert latest_contract.startDate({"from": developer}) == starts
+    assert latest_contract.endDate({"from": developer}) == ends
+    print("wait 5 secs for blockchain to update")
+    time.sleep(5)
+    print("Assert correct, Minting... It must fail since the mint is not active...")
+    with pytest.raises(ValueError):
+        latest_contract.mint(
+            1,
+            {
+                "from": developer,
+                "value": Web3.toWei(0.01, "ether"),
+                "gas_limit": gas_failed_tx,
+            },
+        )
+
+
+# Test user can mint if is within a given period of time and the mint is active
+
+# Test that an user can mint within a period of given time
+
+# test that an user can't mint if the Sales period doesnt start yet
+
+# test that an user can't mint if the Sales period is over
+
+# test that an user can mint if the sales period is set 0 - 0 (always can mint)
+
+# test that an user can't mint over the max mints per transaction
+
+# test that an user can mint less than the Max Mints per transaction
+
+###
+# Test Crowdfund Goals Functionality
+###
+
+# test that an user can configure a crowdfund method --> Default
+
+# test that an user can't redeem when the croudfund method is set at "default"
+
+# test that an user can configure a crowdfund method --> Eth raised
+
+# test that an user can set a goal for eth raised
+
+# test that an user can redeem when the goal is met
+
+# test that an user can't redeem when the ETH goal is not met (change the goal to a higher value)
+
+# test that an user can set a crowdfund method of minted tokens
+
+# test that an user can set a goal for total minted tokens
+
+# test that an user can redeem when the minted tokens goal is met
+
+# test that an user can't redeem when the minted tokens goal is not met (change the goal to a higher value)
+
+# test that an user can redeem over his "Redeems per token limit"
+
+###
+# Test General Management Functions
+###
+
+# test that the contract owner can withdraw the contract raised funds to the vault
