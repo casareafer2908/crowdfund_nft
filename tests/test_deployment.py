@@ -162,7 +162,7 @@ def test_contract_configuration(
 # Test Mint Functionality
 ###
 
-# Test user can set up a period of time to mint (Successful mint time)
+# Contract owner can set up a period of time to mint (Successful mint time)
 def test_owner_set_right_time(succeedTestTime, latest_contract, developer):
     print(f"Used Contract address ==> {latest_contract.address}")
     print(f"Setting sale period...")
@@ -208,7 +208,7 @@ def test_owner_can_set_mint_active(latest_contract, developer):
 # Test user can mint if is within a given period of time and the mint is active
 def test_mint_correct_time_mint_active(latest_contract, developer):
     print(f"Used Contract address ==> {latest_contract.address}")
-    print("Minting test... It must fail since the mint is not active...")
+    print("Minting test... You can mint!")
     latest_contract.mint(
         1,
         {
@@ -218,7 +218,7 @@ def test_mint_correct_time_mint_active(latest_contract, developer):
     )
 
 
-# Test user can set up a period of time to mint (Unsuccessful mint time - Mint Ended)
+# Contract owner can set up a period of time to mint (Unsuccessful mint time - Mint Ended)
 def test_owner_can_set_incorrect_time_ended(
     failTestTimeEnded, latest_contract, developer
 ):
@@ -238,9 +238,11 @@ def test_owner_can_set_incorrect_time_ended(
 
 
 # Test user can not mint if the mint sale is active but the period of time is correct
-def test_mint_incorrect_time_mint_active(latest_contract, developer, gas_failed_tx):
+def test_mint_incorrect_time_ended_mint_active(
+    latest_contract, developer, gas_failed_tx
+):
     print(f"Used Contract address ==> {latest_contract.address}")
-    print("Minting test... It must fail since the mint is not active...")
+    print("Minting test... It must fail since the mint already ended...")
     with pytest.raises(ValueError):
         latest_contract.mint(
             1,
@@ -252,7 +254,33 @@ def test_mint_incorrect_time_mint_active(latest_contract, developer, gas_failed_
         )
 
 
-# Test that an user can mint within a period of given time
+# Contract owner can set mint not active
+def test_owner_can_set_mint_not_active(latest_contract, developer):
+    print("Setting mint -->ON<--")
+    latest_contract.setMintActive(True, {"from": developer})
+    print("Mint set -->ON<--")
+    print("wait 5 secs for blockchain to update")
+    time.sleep(5)
+    print("Assert configuration")
+    assert latest_contract.isActive({"from": developer}) == False
+
+
+# Test user can not mint if the mint is not active and the mint time ended
+def test_mint_incorrect_time_mint_active(latest_contract, developer, gas_failed_tx):
+    print(f"Used Contract address ==> {latest_contract.address}")
+    print(
+        "Minting test... It must fail since the mint is not active and the time has ended..."
+    )
+    with pytest.raises(ValueError):
+        latest_contract.mint(
+            1,
+            {
+                "from": developer,
+                "value": Web3.toWei(0.01, "ether"),
+                "gas_limit": gas_failed_tx,
+            },
+        )
+
 
 # test that an user can't mint if the Sales period doesnt start yet
 
