@@ -60,7 +60,7 @@ def failTestTimeEnded():
 @pytest.fixture
 def succeedTestTime():
     startTime = datetime(2022, 5, 17, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei"))
-    endTime = datetime(2022, 5, 23, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei"))
+    endTime = datetime(2022, 7, 23, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei"))
     return [startTime.timestamp(), endTime.timestamp()]
 
 
@@ -163,9 +163,11 @@ def test_contract_configuration(
 # Test Mint Functionality
 ###
 
-# Test user cant mint if the mint sale is not active even if the period of time
-def test_mint_within_a_given_time(
-    latest_contract, developer, gas_failed_tx, succeedTestTime
+# Test user can set up a period of time to mint (Successful mint time)
+
+
+def test_contract_owner_can_set_mint_period(
+    succeedTestTime, latest_contract, developer
 ):
     print(f"Used Contract address ==> {latest_contract.address}")
     print(f"Setting sale period...")
@@ -179,7 +181,13 @@ def test_mint_within_a_given_time(
     assert latest_contract.endDate({"from": developer}) == ends
     print("wait 5 secs for blockchain to update")
     time.sleep(5)
-    print("Assert correct, Minting... It must fail since the mint is not active...")
+    print("Go!")
+
+
+# Test user cant mint if the mint sale is not active even if the period of time
+def test_mint_within_a_given_time(latest_contract, developer, gas_failed_tx):
+    print(f"Used Contract address ==> {latest_contract.address}")
+    print("Minting test... It must fail since the mint is not active...")
     with pytest.raises(ValueError):
         latest_contract.mint(
             1,
