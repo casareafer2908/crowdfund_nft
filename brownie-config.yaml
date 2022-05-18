@@ -8,6 +8,9 @@ dependencies:
   - OpenZeppelin/openzeppelin-contracts@4.6.0
 compiler:
   solc:
+    optimizer:
+      enabled: False
+      runs: 200
     remappings:
       - '@chainlink=smartcontractkit/chainlink-brownie-contracts@0.4.0'
       - '@openzeppelin=OpenZeppelin/openzeppelin-contracts@4.6.0'

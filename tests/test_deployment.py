@@ -1,72 +1,100 @@
-import time
 import pytest
+import datetime
+import pytz
 from brownie import OneTMShowOff, accounts, network, config
 from scripts.helpful_scripts import (
-    LOCAL_BLOCKCHAIN_ENVIRONMENTS,
     get_publish_source,
 )
-from scripts.mint_oneTM_nft import mint2
 from web3 import Web3
 
 
-def test_can_create_OneTMShowOff_integration():
-    # Arrange
-    if network.show_active() in LOCAL_BLOCKCHAIN_ENVIRONMENTS:
-        pytest.skip("Only for integration testing")
-    print("Arrange tests")
-    print(network.show_active())
-    dev = accounts.add(config["wallets"]["from_key"])
-    setPrice = config["networks"][network.show_active()]["token_price"]
-    metadataLibrary = config["networks"][network.show_active()]["metadata_library"]
-    collectionVault = config["networks"][network.show_active()]["collection_vault"]
-    isActive = True
-    redeemsLimit = 1
-    setSupply = 555
-    mintsPerWallet = 10
-    mintAmmount = 1
-    payable = mintAmmount * 0.01
+@pytest.fixture
+def developer():
+    return accounts.add(config["wallets"]["from_key"])
 
-    # Crowdfund method
-    # 0 => Default
-    # 1 => Eth Raised
-    # 2 => Mint number
-    crowfundMethod = 2
-    crowdfundGoal = 3
+@pytest.fixture
+def setPrice():
+    return config["networks"][network.show_active()]["token_price"]
 
-    print(f"Set token price ==> {Web3.fromWei(setPrice, 'ether')} ETH")
-    print(f"Set Supply Limit ==> {setSupply}")
-    print(f"Set Vault ==> {collectionVault}")
-    print("Deploying contract...")
-    one_tm_show_off = OneTMShowOff.deploy(
+@pytest.fixture
+def setSupply():
+    return 555
+
+@pytest.fixture
+def metadataLibrary():
+    return config["networks"][network.show_active()]["metadata_library"]
+
+@pytest.fixture
+def collectionVault():
+    return config["networks"][network.show_active()]["collection_vault"]
+
+@pytest.fixture
+def payableAmmount(mintAmmount):
+    return mintAmmount * 0.01
+
+@pytest.fixture
+def failTestTime():
+    startTime = datetime.datetime(
+    2022, 5, 20, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
+    )
+    endTime = datetime.datetime(
+        2022, 5, 23, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
+    )
+    return [startTime,endTime]
+
+@pytest.fixture
+def succeedTestTime():
+    startTime = datetime.datetime(
+    2022, 5, 17, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
+    )
+    endTime = datetime.datetime(
+        2022, 5, 23, 3, 0, 0, 0, tzinfo=pytz.timezone("Asia/Taipei")
+    )
+    return [startTime,endTime]
+
+@pytest.fixture
+def alwaysActiveTestTime():
+    startTime = 0
+    endTime = 0
+    return [startTime,endTime]
+
+@pytest.fixture
+def mintsPerWallet():
+    return 3
+
+@pytest.fixture
+def redeemsLimitPerToken():
+    return 1
+
+
+# Deploy a contract
+@pytest.fixture
+def rinkeby_test_contract(setPrice, developer, setSupply):
+    print("Deploying test contract...")
+    deployed = OneTMShowOff.deploy(
         setPrice,
         setSupply,
-        {"from": dev},
+        {"from": developer},
         publish_source=get_publish_source(),
     )
-    # Act
-    print("Contract deployed, setting Gallery...")
-    one_tm_show_off.setGallery(metadataLibrary, {"from": dev})
-    print("Gallery set, setting Vault...")
-    one_tm_show_off.setVault(collectionVault, {"from": dev})
-    print("Vault set, setting Token Redeems Limit...")
-    one_tm_show_off.setTokenRedeemsLimit(redeemsLimit, {"from": dev})
-    print("Token Redeems Limit set, setting Crowdfund Method...")
-    one_tm_show_off.setCrowdfundMethod(crowfundMethod, {"from": dev})
-    print("Crowdfund method set, setting Crowdfund Goal...")
-    one_tm_show_off.setCrowdfundGoal(crowdfundGoal, {"from": dev})
-    print("Crowdfund Goal set, setting Mints per transaction...")
-    one_tm_show_off.setMintablePerWallet(mintsPerWallet, {"from": dev})
-    print("Mints per transaction set, setting Mint Active...")
-    one_tm_show_off.setMintActive(isActive, {"from": dev})
-    print(f"Mint active, minting {mintAmmount} token for {payable} ether")
-    one_tm_show_off.mint(
-        mintAmmount, {"from": dev, "value": Web3.toWei(payable, "ether")}
-    )
-    print("wait 5 secs for blockchain to update")
-    time.sleep(5)
+    print(f"Contract deployed in address ==> {deployed.address}")
+    return deployed
 
-    # Assert
-    assert one_tm_show_off.totalSupply({"from": dev}) == mintAmmount
-    assert one_tm_show_off.supplyLimit({"from": dev}) == setSupply
-    assert one_tm_show_off.price({"from": dev}) == setPrice
-    assert one_tm_show_off.vault({"from": dev}) == collectionVault
+
+# Get the latest deployed contract
+@pytest.fixture
+def latest_contract(OneTMShowOff):
+    contract = OneTMShowOff[len(OneTMShowOff) - 1]
+    print (f"Used Contract address ==> {contract.address}")
+    return contract
+
+
+def test_contract_deployment(rinkeby_test_contract, setPrice, setSupply, developer):
+    print(f"Deployed Contract address ==> {rinkeby_test_contract.address}")
+    print(f"Assert that the price set is correct...")
+    assert rinkeby_test_contract.price({"from": developer}) == setPrice
+    print(f"Assert that the supply limit is correct...")
+    assert rinkeby_test_contract.supplyLimit({"from": developer}) == setSupply
+    print("Done!")
+
+def test_contract_configuration(latest_contract,developer):
