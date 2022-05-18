@@ -72,7 +72,7 @@ def alwaysActiveTestTime():
 
 @pytest.fixture
 def mintsPerTransaction():
-    return 3
+    return 4
 
 
 @pytest.fixture
@@ -143,7 +143,8 @@ def test_contract_configuration(
     latest_contract.setMintablePerTransaction(mintsPerTransaction, {"from": developer})
     print("Mints per transaction set, setting mint -->OFF<--")
     latest_contract.setMintActive(False, {"from": developer})
-    print("Mint set -->OFF<--")
+    print("Mint set -->OFF<-- , Setting max mints per transaction")
+    print("Set max mints per transaction")
     print("wait 5 secs for blockchain to update")
     time.sleep(5)
     print("Asserting all configurations...")
@@ -375,7 +376,7 @@ def test_mint_correct_time_mint_active(latest_contract, developer):
 
 
 # Test user cant mint if the sales period is infinite but the mint is not active
-def test_mint_correct_time_mint_not_active(latest_contract, developer):
+def test_mint_infinite_time_mint_not_active(latest_contract, developer, gas_failed_tx):
     print(f"Used Contract address ==> {latest_contract.address}")
     print("Setting mint -->OFF<--")
     latest_contract.setMintActive(False, {"from": developer})
@@ -394,9 +395,37 @@ def test_mint_correct_time_mint_not_active(latest_contract, developer):
         )
 
 
-# test that an user can't mint over the max mints per transaction
+# Test user can't mint over the max mints per transaction (limit 4)
+def test_mint_too_many_tokens(latest_contract, developer, gas_failed_tx):
+    print(f"Used Contract address ==> {latest_contract.address}")
 
-# test that an user can mint less than the Max Mints per transaction
+    print("Minting test... You Can't mint that many tokens at once!!")
+    with pytest.raises(ValueError):
+        latest_contract.mint(
+            5,
+            {
+                "from": developer,
+                "value": Web3.toWei(0.05, "ether"),
+                "gas_limit": gas_failed_tx,
+            },
+        )
+
+
+# Test user can't mint if the eth sent is not enough
+def test_mint_not_enough_eth(latest_contract, developer, gas_failed_tx):
+    print(f"Used Contract address ==> {latest_contract.address}")
+
+    print("Minting test... You need to spend more eth!!")
+    with pytest.raises(ValueError):
+        latest_contract.mint(
+            4,
+            {
+                "from": developer,
+                "value": Web3.toWei(0.03, "ether"),
+                "gas_limit": gas_failed_tx,
+            },
+        )
+
 
 ###
 # Test Crowdfund Goals Functionality
