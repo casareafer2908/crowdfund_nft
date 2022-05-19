@@ -114,6 +114,11 @@ def gas_failed_tx():
     return 500000
 
 
+@pytest.fixture
+def redeemable_token_id(developer, latest_contract):
+    latest_contract
+
+
 ###
 # Test Contract Deployment
 ###
@@ -282,17 +287,16 @@ def test_owner_can_set_incorrect_time_ended(
     failTestTimeEnded, latest_contract, developer
 ):
     print(f"Setting sale period...")
-    starts = failTestTimeEnded[0]
+    starts = int(failTestTimeEnded[0])
     print(f"Starts ==> {datetime.fromtimestamp(starts)}")
-    ends = failTestTimeEnded[1]
+    ends = int(failTestTimeEnded[1])
     print(f"Ends ==> {datetime.fromtimestamp(ends)}")
     latest_contract.setSalePeriod(starts, ends, {"from": developer})
     print("Time set, asserting times...")
-    assert latest_contract.startDate({"from": developer}) == starts
-    assert latest_contract.endDate({"from": developer}) == ends
     print("wait 5 secs for blockchain to update")
     time.sleep(5)
-    print("Go!")
+    assert latest_contract.startDate({"from": developer}) == starts
+    assert latest_contract.endDate({"from": developer}) == ends
 
 
 # Test user can not mint if the mint sale is active but the period of time is correct
@@ -414,7 +418,7 @@ def test_owner_can_set_infinite_time(
 
 
 # Test user can mint if the sales period is set 0 - 0 (always can mint)
-def test_mint_correct_time_mint_active(latest_contract, developer):
+def test_mint_infinite_time_mint_active(latest_contract, developer):
     print("Minting test... You have infinite time to mint!")
     latest_contract.mint(
         1,
@@ -477,21 +481,27 @@ def test_mint_not_enough_eth(latest_contract, developer, gas_failed_tx):
 # Test Crowdfund Goals and Redeems Functionality ---> ETH_RAISED
 ###
 
+###
+# To test redeems, first you need to get the tokens owned by the tester wallet,
+# choose one of those tokens with remaining redeems, then call redeem with that
+# token id
+###
+
 # Test that contract owner can set a crowdfund method --> ETH_RAISED
 def test_contract_owner_can_set_crowdfund_method_ETH_RAISED(developer, latest_contract):
     print("setting Crowdfund method ==> ETH_RAISED")
-    latest_contract.setCrowdfundMethod(1, {"from": developer})
-    assert latest_contract.crowdfund_method({"from": developer}) == "ETH_RAISED"
+    latest_contract.setCrowdfundMethod(0, {"from": developer})
+    assert latest_contract.crowdfund_method({"from": developer}) == 0
 
 
 # Test that contract owner can configure a ETH_RAISED goal
 def test_contract_owner_can_set_ETH_RAISED_goal(developer, latest_contract):
     print("setting Crowdfund Goal ==> ETH_RAISED ===> .1 ETH")
-    with pytest.raises(ValueError):
-        latest_contract.setCrowdfundGoal(
-            0.1,
-            {"from": developer},
-        )
+    latest_contract.setCrowdfundGoal(
+        0.1,
+        {"from": developer},
+    )
+    assert latest_contract.goal({"from": developer}) == 0.1
 
 
 # Test user can read the set goal
@@ -501,7 +511,7 @@ def test_user_can_read_set_goal(developer, latest_contract):
 
 # Test that an user can't redeem when the ETH_RAISED goal is not met
 def test_owner_cant_redeem_ETH_goal_not_met(developer, latest_contract, gas_failed_tx):
-    balance = latest_contract.balance({"from": developer})
+    balance = latest_contract.balance()
     print(f"Current raised funds ==> {balance}")
     print("Redeem... It must fail since the goal is not met yet")
     with pytest.raises(ValueError):
@@ -512,14 +522,13 @@ def test_owner_cant_redeem_ETH_goal_not_met(developer, latest_contract, gas_fail
                 "gas_limit": gas_failed_tx,
             },
         )
-    print(f"Redeemed ==> {tx}")
 
 
 # Mint tokens to hit ETH_RAISED goal
-def tester_mints_to_met_goal(latest_contract, developer):
+def tester_mints_to_met_goal_ETH_RAISED(latest_contract, developer):
     print("set max mints to 10 to Raise funds faster")
-    balance = latest_contract.balance({"from": developer})
-    print(f"Current raised funds ==> {balance}")
+    balance = latest_contract.balance()
+    print(f"Current raised funds ==> {Web3.fromWei(balance, 'ether')} ETH")
     latest_contract.setMintablePerTransaction(10, {"from": developer})
     print("wait 5 secs for blockchain to update")
     time.sleep(5)
@@ -528,20 +537,21 @@ def tester_mints_to_met_goal(latest_contract, developer):
         10,
         {
             "from": developer,
-            "value": Web3.toWei(0.01, "ether"),
+            "value": Web3.toWei(0.10, "ether"),
         },
     )
-    balance = latest_contract.balance({"from": developer})
-    print(f"Current raised funds ==> {balance}")
+    balance = latest_contract.balance()
+    print(f"Current raised funds ==> {Web3.fromWei(balance, 'ether')} ETH")
 
 
 # test user can redeem if the goal was hit
 def test_owner_can_redeem_ETH_goal_met(developer, latest_contract):
-    balance = latest_contract.balance({"from": developer})
-    print(f"Current raised funds ==> {balance}")
+    balance = latest_contract.balance()
+    print(f"Current raised funds ==> {Web3.fromWei(balance, 'ether')} ETH")
     print("Redeem... It should succeed since the goal is met")
-    tx = latest_contract.redeem(1, {"from": developer})
-    print(f"Redeemed ==> {tx}")
+    goal = latest_contract.goal({"from": developer})
+    print(f"the goal ==> {goal}")
+    latest_contract.redeem(0, 1, {"from": developer})
 
 
 ###
@@ -550,9 +560,9 @@ def test_owner_can_redeem_ETH_goal_met(developer, latest_contract):
 
 # Test that contract owner can set a crowdfund method --> MINT_NUMBER
 def test_owner_can_set_crowdfund_method_MINT_NUMBER(developer, latest_contract):
-    print("setting Crowdfund method ==> MINT_NUMBER")
-    latest_contract.setCrowdfundGoal(2, {"from": developer})
-    assert latest_contract.goal({"from": developer}) == 0.1
+    print("Setting Crowdfund method ==> MINT_NUMBER")
+    latest_contract.setCrowdfundMethod(1, {"from": developer})
+    assert latest_contract.crowdfund_method({"from": developer}) == 1
 
 
 # test that an user can configure a threshold for the MINT_NUMBER goal
@@ -567,11 +577,11 @@ def test_owner_can_set_crowdfund_method_MINT_NUMBER(developer, latest_contract):
 # Test Crowdfund Goals and Redeems Functionality ---> Safety
 ###
 
-# Test that an user can configure a crowdfund method --> ETH_RAISED
-def test_owner_can_set_crowdfund_method(developer, latest_contract):
-    print("setting Crowdfund Goal ==> DEFAULT")
+# Test that an user can configure a crowdfund method --> DEFAULT
+def test_owner_can_set_crowdfund_method_DEFAULT(developer, latest_contract):
+    print("Setting Crowdfund Goal ==> DEFAULT")
     latest_contract.setCrowdfundMethod(0, {"from": developer})
-    assert latest_contract.crowdfund_method({"from": developer}) == "MINT_NUMBER"
+    assert latest_contract.crowdfund_method({"from": developer}) == 0
 
 
 # test that an user can't redeem when the croudfund method is set at "default"

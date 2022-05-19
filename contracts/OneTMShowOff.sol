@@ -112,14 +112,6 @@ contract OneTMShowOff is
         emit CrowdfundGoalSet(true, _goal);
     }
 
-    function redeem(uint256 tokenId, uint256 ammount) external returns (bool) {
-        require(
-            ownerOf(tokenId) == msg.sender,
-            "You are not the owner this token"
-        );
-        return _redeem(tokenId, ammount);
-    }
-
     //TODO update a single token metadata after redeem
     function updateTokenMetadata(bytes32 metadata, uint256 tokenId) public {}
 
@@ -153,6 +145,24 @@ contract OneTMShowOff is
     // Sets `max mints per transaction`
     function setMintablePerTransaction(uint256 _number) external onlyOwner {
         mintablePerTransaction = _number;
+    }
+
+    // Returns an array of the tokens owned by a given user
+    function listUserNFTs(address owner)
+        external
+        view
+        returns (uint256[] memory)
+    {
+        return _listUserNFTs(address(this), owner);
+    }
+
+    // Redeems with a token
+    function redeem(uint256 tokenId, uint256 ammount) external returns (bool) {
+        require(
+            ownerOf(tokenId) == msg.sender,
+            "You are not the owner this token"
+        );
+        return _redeem(tokenId, ammount);
     }
 
     // Minting function used in the public sale

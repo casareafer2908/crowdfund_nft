@@ -11,7 +11,7 @@ abstract contract Crowdfund is Context, Ownable {
         MINT_NUMBER,
         DEFAULT
     }
-    Crowdfund_Method internal crowdfund_method;
+    Crowdfund_Method public crowdfund_method;
     uint256 public goal;
     bool goalMet;
     uint256 public startDate;
@@ -27,11 +27,11 @@ abstract contract Crowdfund is Context, Ownable {
 
     function _setCrowdfundMethod(uint256 method) internal onlyOwner {
         if (method == 0) {
-            crowdfund_method = Crowdfund_Method.DEFAULT;
-        } else if (method == 1) {
             crowdfund_method = Crowdfund_Method.ETH_RAISED;
-        } else {
+        } else if (method == 1) {
             crowdfund_method = Crowdfund_Method.MINT_NUMBER;
+        } else {
+            crowdfund_method = Crowdfund_Method.DEFAULT;
         }
     }
 
@@ -63,18 +63,12 @@ abstract contract Crowdfund is Context, Ownable {
         //TODO: Add Safe Withdraw Logic. If the owner withdraws funds from the contract,
         //the goal trigger will not be met, therefore redeems will be closed on the next mint
 
-        // ETH Raised goal
         if (crowdfund_method == Crowdfund_Method.ETH_RAISED) {
-            //checks if the contract address reached the goal
-            if (address(this).balance >= goal) {
-                return true;
-            } else {
-                return false;
-            }
-        }
-        // Number of mints goal
-        else {
+            return (address(this).balance >= goal ? true : false);
+        } else if (crowdfund_method == Crowdfund_Method.MINT_NUMBER) {
             return (supply >= goal ? true : false);
+        } else {
+            return false;
         }
     }
 

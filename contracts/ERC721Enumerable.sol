@@ -60,4 +60,23 @@ abstract contract ERC721Enumerable is ERC721, IERC721Enumerable {
             interfaceId == type(IERC721Enumerable).interfaceId ||
             super.supportsInterface(interfaceId);
     }
+
+    // See https://github.com/OpenZeppelin/openzeppelin-contracts/issues/3106
+    function _listUserNFTs(address contractAddress, address owner)
+        internal
+        view
+        returns (uint256[] memory)
+    {
+        uint256 balance = IERC721Enumerable(contractAddress).balanceOf(owner);
+
+        uint256[] memory tokens = new uint256[](balance);
+
+        for (uint256 i = 0; i < balance; i++) {
+            tokens[i] = (
+                IERC721Enumerable(contractAddress).tokenOfOwnerByIndex(owner, i)
+            );
+        }
+
+        return tokens;
+    }
 }
