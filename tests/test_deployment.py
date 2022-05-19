@@ -124,6 +124,7 @@ def redeemable_token_id(developer, latest_contract):
 ###
 
 # Test that the contract deploys successfully
+@pytest.mark.timeout(200)
 def test_contract_deployment(rinkeby_test_contract, setPrice, setSupply, developer):
     print(f"Assert that the price set is correct...")
     assert rinkeby_test_contract.price({"from": developer}) == setPrice
@@ -133,6 +134,7 @@ def test_contract_deployment(rinkeby_test_contract, setPrice, setSupply, develop
 
 
 # Test that the contract cant be configured by Bad Actors
+@pytest.mark.timeout(200)
 def test_contract_configuration(
     latest_contract,
     developer,
@@ -168,6 +170,7 @@ def test_contract_configuration(
 
 
 # Test that a bad actor can't change configurations
+@pytest.mark.timeout(200)
 def test_contract_configuration_bad_actor(
     latest_contract,
     badActor,
@@ -230,6 +233,7 @@ def test_contract_configuration_bad_actor(
 ###
 
 # Contract owner can set up a period of time to mint (Successful mint time)
+@pytest.mark.timeout(100)
 def test_owner_set_right_time(succeedTestTime, latest_contract, developer):
     print(f"Setting sale period...")
     starts = succeedTestTime[0]
@@ -246,6 +250,7 @@ def test_owner_set_right_time(succeedTestTime, latest_contract, developer):
 
 
 # Test user can't mint if mint is not active even within the mint period
+@pytest.mark.timeout(100)
 def test_mint_correct_time_mint_not_active(latest_contract, developer, gas_failed_tx):
     print("Minting test... It must fail since the mint is not active...")
     with pytest.raises(ValueError):
@@ -260,6 +265,7 @@ def test_mint_correct_time_mint_not_active(latest_contract, developer, gas_faile
 
 
 # Contract owner can set Mint Active
+@pytest.mark.timeout(100)
 def test_owner_can_set_mint_active(latest_contract, developer):
     print("Setting mint -->ON<--")
     latest_contract.setMintActive(True, {"from": developer})
@@ -271,6 +277,7 @@ def test_owner_can_set_mint_active(latest_contract, developer):
 
 
 # Test user can mint if is within a given period of time and the mint is active
+@pytest.mark.timeout(100)
 def test_mint_correct_time_mint_active(latest_contract, developer):
     print("Minting test... You can mint!")
     latest_contract.mint(
@@ -283,6 +290,7 @@ def test_mint_correct_time_mint_active(latest_contract, developer):
 
 
 # Contract owner can set up a period of time to mint (Unsuccessful mint time - Mint Ended)
+@pytest.mark.timeout(100)
 def test_owner_can_set_incorrect_time_ended(
     failTestTimeEnded, latest_contract, developer
 ):
@@ -300,6 +308,7 @@ def test_owner_can_set_incorrect_time_ended(
 
 
 # Test user can not mint if the mint sale is active but the period of time is correct
+@pytest.mark.timeout(100)
 def test_mint_incorrect_time_ended_mint_active(
     latest_contract, developer, gas_failed_tx
 ):
@@ -316,6 +325,7 @@ def test_mint_incorrect_time_ended_mint_active(
 
 
 # Contract owner can set mint not active
+@pytest.mark.timeout(100)
 def test_owner_can_set_mint_not_active(latest_contract, developer):
     print("Setting mint -->OFF<--")
     latest_contract.setMintActive(False, {"from": developer})
@@ -327,6 +337,7 @@ def test_owner_can_set_mint_not_active(latest_contract, developer):
 
 
 # Test user can not mint if the mint is not active and the mint time ended
+@pytest.mark.timeout(100)
 def test_mint_incorrect_time_mint_not_active(latest_contract, developer, gas_failed_tx):
     print(
         "Minting test... It must fail since the mint is not active and the time has ended..."
@@ -343,6 +354,7 @@ def test_mint_incorrect_time_mint_not_active(latest_contract, developer, gas_fai
 
 
 # Contract owner can set up a period of time to mint (Unsuccessful mint time - Mint Not Started)
+@pytest.mark.timeout(100)
 def test_owner_can_set_incorrect_time_not_yet_start(
     failTestTimeNotYetStart, latest_contract, developer
 ):
@@ -361,6 +373,7 @@ def test_owner_can_set_incorrect_time_not_yet_start(
 
 
 # Test user can't mint if the Sales period doesnt start yet
+@pytest.mark.timeout(100)
 def test_mint_incorrect_time_ended_mint_not_active(
     latest_contract, developer, gas_failed_tx
 ):
@@ -379,6 +392,7 @@ def test_mint_incorrect_time_ended_mint_not_active(
 
 
 # Test user can't mint if the Sales period doesnt start yet with mint active
+@pytest.mark.timeout(100)
 def test_mint_incorrect_time_ended_mint_active(
     latest_contract, developer, gas_failed_tx
 ):
@@ -400,6 +414,7 @@ def test_mint_incorrect_time_ended_mint_active(
 
 
 # Contract owner can set infinite time sales period
+@pytest.mark.timeout(100)
 def test_owner_can_set_infinite_time(
     succeedTestTimeAlwaysOpen, latest_contract, developer
 ):
@@ -418,6 +433,7 @@ def test_owner_can_set_infinite_time(
 
 
 # Test user can mint if the sales period is set 0 - 0 (always can mint)
+@pytest.mark.timeout(100)
 def test_mint_infinite_time_mint_active(latest_contract, developer):
     print("Minting test... You have infinite time to mint!")
     latest_contract.mint(
@@ -430,6 +446,7 @@ def test_mint_infinite_time_mint_active(latest_contract, developer):
 
 
 # Test user cant mint if the sales period is infinite but the mint is not active
+@pytest.mark.timeout(100)
 def test_mint_infinite_time_mint_not_active(latest_contract, developer, gas_failed_tx):
     print("Setting mint -->OFF<--")
     latest_contract.setMintActive(False, {"from": developer})
@@ -449,8 +466,13 @@ def test_mint_infinite_time_mint_not_active(latest_contract, developer, gas_fail
 
 
 # Test user can't mint over the max mints per transaction (limit 4)
+@pytest.mark.timeout(100)
 def test_mint_too_many_tokens(latest_contract, developer, gas_failed_tx):
-
+    print("Setting mint -->ON<--")
+    latest_contract.setMintActive(True, {"from": developer})
+    print("Mint set --ON<--")
+    print("wait 5 secs for blockchain to update")
+    time.sleep(5)
     print("Minting test... You Can't mint that many tokens at once!!")
     with pytest.raises(ValueError):
         latest_contract.mint(
@@ -464,6 +486,7 @@ def test_mint_too_many_tokens(latest_contract, developer, gas_failed_tx):
 
 
 # Test user can't mint if the eth sent is not enough
+@pytest.mark.timeout(100)
 def test_mint_not_enough_eth(latest_contract, developer, gas_failed_tx):
     print("Minting test... Will Fail!! You need to spend more eth!!")
     with pytest.raises(ValueError):
@@ -488,6 +511,7 @@ def test_mint_not_enough_eth(latest_contract, developer, gas_failed_tx):
 ###
 
 # Test that contract owner can set a crowdfund method --> ETH_RAISED
+@pytest.mark.timeout(100)
 def test_contract_owner_can_set_crowdfund_method_ETH_RAISED(developer, latest_contract):
     print("setting Crowdfund method ==> ETH_RAISED")
     latest_contract.setCrowdfundMethod(0, {"from": developer})
@@ -495,27 +519,31 @@ def test_contract_owner_can_set_crowdfund_method_ETH_RAISED(developer, latest_co
 
 
 # Test that contract owner can configure a ETH_RAISED goal
+@pytest.mark.timeout(100)
 def test_contract_owner_can_set_ETH_RAISED_goal(developer, latest_contract):
     print("setting Crowdfund Goal ==> ETH_RAISED ===> .1 ETH")
+    goal = Web3.toWei(0.1, "ether")
     latest_contract.setCrowdfundGoal(
-        0.1,
+        goal,
         {"from": developer},
     )
-    assert latest_contract.goal({"from": developer}) == 0.1
+    assert latest_contract.goal({"from": developer}) == goal
 
 
 # Test user can read the set goal
+@pytest.mark.timeout(100)
 def test_user_can_read_set_goal(developer, latest_contract):
-    assert latest_contract.goal({"from": developer}) == 0.1
+    assert latest_contract.goal({"from": developer}) == Web3.toWei(0.1, "ether")
 
 
 # Test that an user can't redeem when the ETH_RAISED goal is not met
+@pytest.mark.timeout(100)
 def test_owner_cant_redeem_ETH_goal_not_met(developer, latest_contract, gas_failed_tx):
     balance = latest_contract.balance()
     print(f"Current raised funds ==> {balance}")
     print("Redeem... It must fail since the goal is not met yet")
     with pytest.raises(ValueError):
-        tx = latest_contract.redeem(
+        latest_contract.redeem(
             1,
             {
                 "from": developer,
@@ -525,6 +553,7 @@ def test_owner_cant_redeem_ETH_goal_not_met(developer, latest_contract, gas_fail
 
 
 # Mint tokens to hit ETH_RAISED goal
+@pytest.mark.timeout(100)
 def tester_mints_to_met_goal_ETH_RAISED(latest_contract, developer):
     print("set max mints to 10 to Raise funds faster")
     balance = latest_contract.balance()
@@ -545,6 +574,7 @@ def tester_mints_to_met_goal_ETH_RAISED(latest_contract, developer):
 
 
 # test user can redeem if the goal was hit
+@pytest.mark.timeout(100)
 def test_owner_can_redeem_ETH_goal_met(developer, latest_contract):
     balance = latest_contract.balance()
     print(f"Current raised funds ==> {Web3.fromWei(balance, 'ether')} ETH")
@@ -559,6 +589,7 @@ def test_owner_can_redeem_ETH_goal_met(developer, latest_contract):
 ###
 
 # Test that contract owner can set a crowdfund method --> MINT_NUMBER
+@pytest.mark.timeout(100)
 def test_owner_can_set_crowdfund_method_MINT_NUMBER(developer, latest_contract):
     print("Setting Crowdfund method ==> MINT_NUMBER")
     latest_contract.setCrowdfundMethod(1, {"from": developer})
@@ -578,6 +609,7 @@ def test_owner_can_set_crowdfund_method_MINT_NUMBER(developer, latest_contract):
 ###
 
 # Test that an user can configure a crowdfund method --> DEFAULT
+@pytest.mark.timeout(100)
 def test_owner_can_set_crowdfund_method_DEFAULT(developer, latest_contract):
     print("Setting Crowdfund Goal ==> DEFAULT")
     latest_contract.setCrowdfundMethod(0, {"from": developer})
