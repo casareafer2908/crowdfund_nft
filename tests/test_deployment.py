@@ -543,6 +543,7 @@ def test_owner_cant_redeem_ETH_goal_not_met(developer, latest_contract, gas_fail
     print("Redeem... It must fail since the goal is not met yet")
     with pytest.raises(ValueError):
         latest_contract.redeem(
+            0,
             1,
             {
                 "from": developer,
@@ -572,15 +573,36 @@ def tester_mints_to_met_goal_ETH_RAISED(latest_contract, developer):
     print(f"Current raised funds ==> {Web3.fromWei(balance, 'ether')} ETH")
 
 
-# test user can redeem if the goal was hit
+# Test user can redeem if the goal was hit
 @pytest.mark.timeout(100)
-def test_owner_can_redeem_ETH_goal_met(developer, latest_contract):
+def test_token_owner_can_redeem_ETH_goal_met(developer, latest_contract):
     balance = latest_contract.balance()
     print(f"Current raised funds ==> {Web3.fromWei(balance, 'ether')} ETH")
     print("Redeem... It should succeed since the goal is met")
     goal = latest_contract.goal({"from": developer})
     print(f"the goal ==> {Web3.fromWei(goal, 'ether')}")
     latest_contract.redeem(0, 1, {"from": developer})
+
+
+# Test user can't redeem if he has no redeems left with the ETH GOAL met
+@pytest.mark.timeout(100)
+def test_token_owner_cant_redeem_ETH_goal_met_no_redeems_left(
+    developer, latest_contract, gas_failed_tx
+):
+    balance = latest_contract.balance()
+    print(f"Current raised funds ==> {Web3.fromWei(balance, 'ether')} ETH")
+    print("Redeem... It should fail since token 0 got no redeems left")
+    goal = latest_contract.goal({"from": developer})
+    print(f"the goal ==> {Web3.fromWei(goal, 'ether')}")
+    with pytest.raises(ValueError):
+        latest_contract.redeem(
+            0,
+            1,
+            {
+                "from": developer,
+                "gas_limit": gas_failed_tx,
+            },
+        )
 
 
 ###
@@ -595,13 +617,89 @@ def test_owner_can_set_crowdfund_method_MINT_NUMBER(developer, latest_contract):
     assert latest_contract.crowdfund_method({"from": developer}) == 1
 
 
-# test that an user can configure a threshold for the MINT_NUMBER goal
+# Test contract owner can configure the MINT_NUMBER goal
+@pytest.mark.timeout(100)
+def test_contract_owner_can_set_MINT_NUMBER_goal(developer, latest_contract):
+    print("setting Crowdfund Goal ==> MINT_NUMBER ===> 20 NFT's")
+    goal = 20
+    latest_contract.setCrowdfundGoal(
+        goal,
+        {"from": developer},
+    )
+    assert latest_contract.goal({"from": developer}) == goal
 
-# test that an user can't redeem when the MINT_NUMBER goal is not met
+
+# Contract owner can set redeem state false
+@pytest.mark.timeout(100)
+def contract_owner_sets_redeem_state_false(latest_contract, developer):
+    print("setting state false for testing...")
+    latest_contract.setRedeemState(False, {"from": developer})
+
+
+# Test user can't redeem when the MINT_NUMBER goal is not met
+@pytest.mark.timeout(100)
+def test_owner_cant_redeem_MINT_NUMBER_goal_not_met(
+    developer, latest_contract, gas_failed_tx
+):
+    minted = latest_contract.totalSupply()
+    print(f"Current minted nft's ==> {minted}")
+    goal = latest_contract.goal({"from": developer})
+    print(f"the goal ==> {goal}")
+    print("Redeem... It must fail since the mint number goal is not met yet")
+    with pytest.raises(ValueError):
+        latest_contract.redeem(
+            1,
+            1,
+            {
+                "from": developer,
+                "gas_limit": gas_failed_tx,
+            },
+        )
+
 
 # Mint tokens to hit the MINT_NUMBER goal
+@pytest.mark.timeout(100)
+def tester_mints_to_met_goal_MINT_NUMBER(latest_contract, developer):
+    minted = latest_contract.totalSupply()
+    print(f"Current minted nft's ==> {minted}")
+    print("Minting 10 tokens...")
+    latest_contract.mint(
+        10,
+        {
+            "from": developer,
+            "value": Web3.toWei(0.10, "ether"),
+        },
+    )
+    time.sleep(1)
+    minted = latest_contract.totalSupply()
+    print(f"Current minted nft's ==> {minted}")
+
 
 # test that an user can redeem when the MINT_NUMBER goal is hit
+@pytest.mark.timeout(100)
+def test_token_owner_can_redeem_MINT_NUMBER_goal_met(developer, latest_contract):
+    minted = latest_contract.totalSupply()
+    print(f"Current minted nft's ==> {minted}")
+    goal = latest_contract.goal({"from": developer})
+    print(f"the goal ==> {goal}")
+    print("Redeem... It should succeed since the goal is met")
+    latest_contract.redeem(1, 1, {"from": developer})
+
+
+# Test user can't redeem over his "Redeems per token limit"
+@pytest.mark.timeout(100)
+def test_owner_cant_redeem_over_redeem_limit(developer, latest_contract, gas_failed_tx):
+    print("Redeem... It must fail since the redeem limit is 1 per token")
+    with pytest.raises(ValueError):
+        latest_contract.redeem(
+            2,
+            2,
+            {
+                "from": developer,
+                "gas_limit": gas_failed_tx,
+            },
+        )
+
 
 ###
 # Test Crowdfund Goals and Redeems Functionality ---> Safety
@@ -615,16 +713,63 @@ def test_owner_can_set_crowdfund_method_DEFAULT(developer, latest_contract):
     assert latest_contract.crowdfund_method({"from": developer}) == 0
 
 
-# test that an user can't redeem when the croudfund method is set at "default"
+# Test user can't redeem when the croudfund method is set at "default"
+@pytest.mark.timeout(100)
+def test_owner_cant_redeem_crowdfund_metod_DEFAULT(
+    developer, latest_contract, gas_failed_tx
+):
+    print("Redeem... It must fail since the crowdfund method is DEFAULT")
+    with pytest.raises(ValueError):
+        latest_contract.redeem(
+            2,
+            1,
+            {
+                "from": developer,
+                "gas_limit": gas_failed_tx,
+            },
+        )
 
-# Test user can't redeem over his "Redeems per token limit"
 
 # Test that only the token owner can redeem with his token
+@pytest.mark.timeout(100)
+def test_BAD_ACTOR_cant_redeem_not_owned_token(
+    badActor, latest_contract, gas_failed_tx
+):
+    print("Redeem... It must fail since BADACTOR is not owner of the token")
+    with pytest.raises(ValueError):
+        latest_contract.redeem(
+            4,
+            1,
+            {
+                "from": badActor,
+                "gas_limit": gas_failed_tx,
+            },
+        )
+
 
 ###
 # Test General Management Functions
 ###
 
 # Test that a Bad actor can't withdraw the funds
+@pytest.mark.timeout(100)
+def test_BAD_ACTOR_cant_withdraw_funds_from_the_contract(
+    badActor, latest_contract, gas_failed_tx
+):
+    print("Withdraw... It must fail since BADACTOR is not owner of the contract")
+    with pytest.raises(ValueError):
+        latest_contract.withdraw(
+            {
+                "from": badActor,
+                "gas_limit": gas_failed_tx,
+            }
+        )
+
 
 # test that the contract owner can withdraw the contract raised funds to the vault
+@pytest.mark.timeout(100)
+def test_owner_can_withdraw_funds_to_the_vault(
+    developer, latest_contract, gas_failed_tx
+):
+    print("Withdraw funds to the vault... it should pass since im the owner")
+    latest_contract.withdraw({"from": developer})
