@@ -1,9 +1,8 @@
-import brownie
 import pytest
 from datetime import datetime
 import pytz
 import time
-from brownie import OneTMShowOff, accounts, network, config, exceptions
+from brownie import OneTMShowOff, accounts, network, config
 from scripts.helpful_scripts import (
     get_publish_source,
 )
@@ -580,7 +579,7 @@ def test_owner_can_redeem_ETH_goal_met(developer, latest_contract):
     print(f"Current raised funds ==> {Web3.fromWei(balance, 'ether')} ETH")
     print("Redeem... It should succeed since the goal is met")
     goal = latest_contract.goal({"from": developer})
-    print(f"the goal ==> {goal}")
+    print(f"the goal ==> {Web3.fromWei(goal, 'ether')}")
     latest_contract.redeem(0, 1, {"from": developer})
 
 
