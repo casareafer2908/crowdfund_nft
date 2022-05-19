@@ -63,7 +63,7 @@ abstract contract ERC721Reedemable is Context, Ownable {
         redeem_state = (state == true ? Redeem_State.ON : Redeem_State.OFF);
     }
 
-    function _redeem(uint256 tokenId, uint256 ammount) internal {
+    function _redeem(uint256 tokenId, uint256 ammount) internal returns (bool) {
         require(
             redeem_state == Redeem_State.ON,
             "Redeems are not available right now"
@@ -74,5 +74,6 @@ abstract contract ERC721Reedemable is Context, Ownable {
         require(availableRedeems >= ammount, "You have not enough redeems");
         tokenIdToRemainingRedeems[tokenId] = availableRedeems - 1;
         emit redeemGoods(ammount, tokenIdToRemainingRedeems[tokenId]);
+        return true;
     }
 }

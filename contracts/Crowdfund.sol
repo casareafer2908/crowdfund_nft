@@ -74,11 +74,7 @@ abstract contract Crowdfund is Context, Ownable {
         }
         // Number of mints goal
         else {
-            if (supply >= goal) {
-                return true;
-            } else {
-                return false;
-            }
+            return (supply >= goal ? true : false);
         }
     }
 

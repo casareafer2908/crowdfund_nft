@@ -112,12 +112,12 @@ contract OneTMShowOff is
         emit CrowdfundGoalSet(true, _goal);
     }
 
-    function redeem(uint256 tokenId, uint256 ammount) external {
+    function redeem(uint256 tokenId, uint256 ammount) external returns (bool) {
         require(
             ownerOf(tokenId) == msg.sender,
             "You are not the owner this token"
         );
-        _redeem(tokenId, ammount);
+        return _redeem(tokenId, ammount);
     }
 
     //TODO update a single token metadata after redeem

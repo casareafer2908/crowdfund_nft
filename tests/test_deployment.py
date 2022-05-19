@@ -474,33 +474,92 @@ def test_mint_not_enough_eth(latest_contract, developer, gas_failed_tx):
 
 
 ###
-# Test Crowdfund Goals Functionality
+# Test Crowdfund Goals and Redeems Functionality ---> ETH_RAISED
 ###
 
-# test that an user can configure a crowdfund method --> Default
+# Test that contract owner can set a crowdfund method --> ETH_RAISED
+def test_contract_owner_can_set_crowdfund_method_ETH_RAISED(developer, latest_contract):
+    print("setting Crowdfund method ==> ETH_RAISED")
+    latest_contract.setCrowdfundMethod(1, {"from": developer})
+
+
+# Test that contract owner can configure a ETH_RAISED goal
+def test_contract_owner_can_set_ETH_RAISED_goal(developer, latest_contract):
+    print("setting Crowdfund Goal ==> ETH_RAISED ===> .1 ETH")
+    with pytest.raises(ValueError):
+        latest_contract.setCrowdfundGoal(
+            0.1,
+            {"from": developer},
+        )
+
+
+# Test that an user can't redeem when the ETH_RAISED goal is not met
+def test_owner_cant_redeem_ETH_goal_not_met(developer, latest_contract, gas_failed_tx):
+    balance = latest_contract.balance({"from": developer})
+    print(f"Current raised funds ==> {balance}")
+    print("Redeem... It must fail since the goal is not met yet")
+    latest_contract.redeem(
+        1,
+        {
+            "from": developer,
+            "gas_limit": gas_failed_tx,
+        },
+    )
+
+
+# Send ETH to the contract to hit the ETH_RAISED goal
+def tester_sends_eth_to_met_goal()
+latest_contract.mint(
+            1,
+            {
+                "from": developer,
+                "value": Web3.toWei(0.01, "ether"),
+                "gas_limit": gas_failed_tx,
+            },
+        )
+
+# test user can redeem if the goal was hit
+
+# Test user can read the set goal
+
+###
+# Test Crowdfund Goals and Redeems Functionality ---> MINT_NUMBER
+###
+
+# Test that contract owner can set a crowdfund method --> MINT_NUMBER
+def test_owner_can_set_crowdfund_method(developer, latest_contract):
+    print("setting Crowdfund Goal ==> ETH_RAISED")
+    latest_contract.setCrowdfundGoal(1, {"from": developer})
+
+
+# test that an user can configure a threshold for the MINT_NUMBER goal
+
+# test that an user can't redeem when the MINT_NUMBER goal is not met
+
+# Mint tokens to hit the MINT_NUMBER goal
+
+# test that an user can redeem when the MINT_NUMBER goal is hit
+
+###
+# Test Crowdfund Goals and Redeems Functionality ---> Safety
+###
+
+# Test that an user can configure a crowdfund method --> ETH_RAISED
+def test_owner_can_set_crowdfund_method(developer, latest_contract):
+    print("setting Crowdfund Goal ==> DEFAULT")
+    latest_contract.setCrowdfundGoal(0, {"from": developer})
+
 
 # test that an user can't redeem when the croudfund method is set at "default"
 
-# test that an user can configure a crowdfund method --> Eth raised
+# Test user can't redeem over his "Redeems per token limit"
 
-# test that an user can set a goal for eth raised
-
-# test that an user can redeem when the goal is met
-
-# test that an user can't redeem when the ETH goal is not met (change the goal to a higher value)
-
-# test that an user can set a crowdfund method of minted tokens
-
-# test that an user can set a goal for total minted tokens
-
-# test that an user can redeem when the minted tokens goal is met
-
-# test that an user can't redeem when the minted tokens goal is not met (change the goal to a higher value)
-
-# test that an user can redeem over his "Redeems per token limit"
+# Test that only the token owner can redeem with his token
 
 ###
 # Test General Management Functions
 ###
+
+# Test that a Bad actor can't withdraw the funds
 
 # test that the contract owner can withdraw the contract raised funds to the vault
