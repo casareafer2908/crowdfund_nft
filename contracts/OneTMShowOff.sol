@@ -104,6 +104,7 @@ contract OneTMShowOff is
         require(_method <= 2, "Invalid Crowdfund Method");
         require(_method >= 0, "Invalid Crowdfund Method");
         _setCrowdfundMethod(_method);
+        _setRedeemState(false);
         emit CrowdfundMethodSet(true, _method);
     }
 

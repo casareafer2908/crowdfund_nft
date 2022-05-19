@@ -634,6 +634,8 @@ def test_contract_owner_can_set_MINT_NUMBER_goal(developer, latest_contract):
 def contract_owner_sets_redeem_state_false(latest_contract, developer):
     print("setting state false for testing...")
     latest_contract.setRedeemState(False, {"from": developer})
+    time.sleep(1)
+    assert latest_contract.readRedeemState() == False
 
 
 # Test user can't redeem when the MINT_NUMBER goal is not met
@@ -683,7 +685,7 @@ def test_token_owner_can_redeem_MINT_NUMBER_goal_met(developer, latest_contract)
     goal = latest_contract.goal({"from": developer})
     print(f"the goal ==> {goal}")
     print("Redeem... It should succeed since the goal is met")
-    latest_contract.redeem(1, 1, {"from": developer})
+    latest_contract.redeem(2, 1, {"from": developer})
 
 
 # Test user can't redeem over his "Redeems per token limit"
