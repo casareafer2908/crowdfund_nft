@@ -9,7 +9,7 @@ import "./ERC721Reedemable.sol";
 import "./Crowdfund.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract OneTMCrowdfundShowOff is
+contract OneTMShowOff is
     ERC721Enumerable,
     Ownable,
     ERC721Reedemable,
@@ -27,7 +27,7 @@ contract OneTMCrowdfundShowOff is
 
     // Sets `price`, `nft supply`, `mints per wallet` and `redeems per nft` upon deployment
     constructor(uint256 _price, uint256 _supplyLimit)
-        ERC721("OneTMCrowdfundShowOff", "OneTMCrowdfund")
+        ERC721("OneTMShowOff", "OneTM")
     {
         setPrice(_price);
         setSupply(_supplyLimit);
