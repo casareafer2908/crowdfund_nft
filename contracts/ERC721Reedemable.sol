@@ -72,7 +72,7 @@ abstract contract ERC721Reedemable is Context, Ownable {
         uint256 availableRedeems = tokenIdToRemainingRedeems[tokenId];
         require(availableRedeems > 0, "You have no redeems left");
         require(availableRedeems >= ammount, "You have not enough redeems");
-        tokenIdToRemainingRedeems[tokenId] = availableRedeems - 1;
+        tokenIdToRemainingRedeems[tokenId] = availableRedeems - ammount;
         emit redeemGoods(ammount, tokenIdToRemainingRedeems[tokenId]);
         return true;
     }
